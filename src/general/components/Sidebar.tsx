@@ -8,7 +8,8 @@ import {
   Target, 
   AlertTriangle, 
   Server, 
-  CombineIcon
+  CombineIcon,
+  ChartBar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ const menuItems = [
   { icon: AlertTriangle, label: "Riesgos", path: "/riesgos" },
   { icon: Server, label: "Infraestructura", path: "/infraestructura" },
   { icon: CombineIcon, label: "Modelos", path: "/models" },
+  { icon: ChartBar, label: "Datos", path: "/data" },
 ];
 
 
