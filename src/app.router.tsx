@@ -11,6 +11,7 @@ import { AdminArtefactsPage } from './admin/pages/artefacts/AdminArtifactsPage'
 import { AdminArtefactPage } from './admin/pages/artefact/AdminArtifactPage'
 import { ProcessPage } from './general/pages/process/ProcessPage'
 import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
+import { DataPage } from './general/pages/data/dataPage'
 
 
 
@@ -39,6 +40,10 @@ export const appRouter = createBrowserRouter ([
         {
             path: 'process',
             element: <ProcessPage />
+        },
+        {
+            path: 'data',
+            element: <DataPage />
         },
 
        ],
