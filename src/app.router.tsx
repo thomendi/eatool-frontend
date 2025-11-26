@@ -3,16 +3,17 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import { HomePage } from './general/pages/home/HomePage'
 import { GeneralLayout } from './general/layouts/GeneralLayout'
 import { ArtifactPage } from './general/pages/artifact/ArtifactPage'
-import { ModelsPage } from './general/pages/models/ModelsPage'
+// import { ModelsPage } from './general/pages/models/ModelsPage'
 import { LoginPage } from './auth/pages/login/LoginPage'
 import { RecoveryPage } from './auth/pages/recovery/RecoveryPage'
 import { DashboardPage } from './admin/pages/dashboard/DashboardPage'
 import { AdminArtefactsPage } from './admin/pages/artefacts/AdminArtifactsPage'
 import { AdminArtefactPage } from './admin/pages/artefact/AdminArtifactPage'
 import { ProcessPage } from './general/pages/process/ProcessPage'
-import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
-import BpmnEditor from './general/components/BpmnEditor'
 import ModelProcessPage from './general/pages/process/ModelProcessPage'
+import { DataPage } from './general/pages/data/dataPage'
+
+// import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
 
 
 
@@ -45,6 +46,10 @@ export const appRouter = createBrowserRouter ([
         {
             path: 'process',
             element: <ProcessPage />
+        },
+        {
+            path: 'data',
+            element: <DataPage />
         },
 
        ],

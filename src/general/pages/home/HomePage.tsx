@@ -1,11 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomPageHeader } from "@/general/components/CustomPageHeader";
-import { GitBranch, Layers, Users, AppWindow, Target, AlertTriangle, TrendingUp, Server } from "lucide-react";
-import { useArtefacts } from '@/general/hooks/useArtefacts';
-import "bpmn-js/dist/assets/diagram-js.css";
-import "bpmn-js/dist/assets/bpmn-js.css";
-import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
+import { GitBranch, Layers, Users, AppWindow, Target, AlertTriangle, TrendingUp, Server, ChartBar } from "lucide-react";
+
 
 
 const stats = [
@@ -16,6 +13,7 @@ const stats = [
   { icon: Target, label: "Objetivos", value: 12, trend: "+3%" },
   { icon: AlertTriangle, label: "Riesgos", value: 8, trend: "-2%" },
   { icon: Server, label: "Infraestructura", value: 28, trend: "+10%" },
+  { icon: ChartBar, label: "Datos", value: 28, trend: "+10%" },
 ];
 
 export const HomePage = () => {
