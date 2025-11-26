@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomPageHeader } from "@/general/components/CustomPageHeader";
 import { GitBranch, Layers, Users, AppWindow, Target, AlertTriangle, TrendingUp, Server, ChartBar } from "lucide-react";
 
-
+//. Tommy acuerdate del .env
 
 const stats = [
   { icon: GitBranch, label: "Procesos", value: 24, trend: "+12%" },
