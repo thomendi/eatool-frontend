@@ -11,6 +11,8 @@ import { AdminArtefactsPage } from './admin/pages/artefacts/AdminArtifactsPage'
 import { AdminArtefactPage } from './admin/pages/artefact/AdminArtifactPage'
 import { ProcessPage } from './general/pages/process/ProcessPage'
 import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
+import BpmnEditor from './general/components/BpmnEditor'
+import ModelProcessPage from './general/pages/process/ModelProcessPage'
 
 
 
@@ -33,8 +35,12 @@ export const appRouter = createBrowserRouter ([
            element: <ArtifactPage />,
         },
         {
+            path: 'modelsView/:id',
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
+        },
+        {
             path: 'models',
-            element: <ModelsPage/>,   //<ModelsPage ProcessEditPage/>
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
         },
         {
             path: 'process',

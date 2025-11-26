@@ -2,7 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomPageHeader } from "@/general/components/CustomPageHeader";
 import { GitBranch, Layers, Users, AppWindow, Target, AlertTriangle, TrendingUp, Server } from "lucide-react";
-
+import { useArtefacts } from '@/general/hooks/useArtefacts';
+import "bpmn-js/dist/assets/diagram-js.css";
+import "bpmn-js/dist/assets/bpmn-js.css";
+import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
 
 
 const stats = [
@@ -16,6 +19,8 @@ const stats = [
 ];
 
 export const HomePage = () => {
+
+
   return (
     <>
       <div className="min-h-screen">
