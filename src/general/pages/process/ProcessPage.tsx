@@ -1,9 +1,13 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CustomPageHeader } from "@/general/components/CustomPageHeader";
 import  { Button } from "@/general/components/ui/button";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil} from "lucide-react";
 import { useState } from "react";
 import { ProcessForm } from "./ProcessForm";
+import { useArtefacts } from "@/general/hooks/useArtefacts";
+import type { Artefact } from '../../../interfaces/artefacts.response';
+import { useNavigate } from "react-router";
+
 
 
 
@@ -14,13 +18,21 @@ const mockProcesos = [
   { id: 4, nombre: "Facturación", categoria: "Finanzas", estado: "Activo", propietario: "Carlos Ruiz" },
   { id: 5, nombre: "Soporte al Cliente", categoria: "Servicio", estado: "Activo", propietario: "Laura Martín" },
 ];
-export const ProcessPage = () => { 
+export const ProcessPage = () => {
+    const navigate = useNavigate();
     const [formOpen, setFormOpen] = useState(false);
-  const [selectedProceso, setSelectedProceso] = useState<typeof mockProcesos[0] | undefined>();
+    const  {data}  = useArtefacts();
+    const process = data?.artefacts || [] ;
+  const [selectedProceso, setSelectedProceso] = useState<Artefact | undefined>();
 
-  const handleEdit = (proceso: typeof mockProcesos[0]) => {
+  const handleEdit = (proceso: Artefact) => {
     setSelectedProceso(proceso);
     setFormOpen(true);
+  };
+  const handleGraph = (proceso:Artefact) => {
+    const idart = proceso.id;
+    const url = "/modelsView/"+ idart;
+    navigate(url);
   };
 
   const handleNew = () => {
@@ -42,41 +54,55 @@ export const ProcessPage = () => {
       />
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 gap-4">
-          {mockProcesos.map((proceso) => (
+          {process.map((proceso) => (
             <Card key={proceso.id} className="hover:shadow-md transition-shadow border-border/50">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{proceso.nombre}</CardTitle>
-                  <div className="flex items-center gap-2">
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg">{proceso.name}</CardTitle>
+                  <div className="flex items-center gap-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        proceso.estado === "Activo"
+                        proceso.state === "ACTIVE"
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                           : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                       }`}
                     >
-                      {proceso.estado}
+                      {proceso.state}
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEdit(proceso)}
-                      className="h-8 w-8"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </div>
+                    <div className="flex items-center gap-4">
+                       <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleGraph(proceso)}
+                        className="h-2 w-8">
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        MODELO
+                      </span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(proceso)}
+                        className="h-2 w-8">
+                       <Pencil className="h-2 w-4" />
+                     </Button>
+                    </div>
+                </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="content-start items-start">
+                <div  className="py-0">
+                    <span>{proceso.description}</span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Categoría:</span>
-                    <span className="ml-2 font-medium text-foreground">{proceso.categoria}</span>
+                    <span className="ml-2 font-medium text-foreground">{proceso.category}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Propietario:</span>
-                    <span className="ml-2 font-medium text-foreground">{proceso.propietario}</span>
+                    <span className="ml-2 font-medium text-foreground">{proceso.owner}</span>
                   </div>
                 </div>
               </CardContent>
@@ -85,8 +111,8 @@ export const ProcessPage = () => {
         </div>
       </div>
 
-      <ProcessForm 
-        open={formOpen} 
+      <ProcessForm
+        open={formOpen}
         onOpenChange={setFormOpen}
         proceso={selectedProceso}
       />

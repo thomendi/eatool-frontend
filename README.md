@@ -1,4 +1,15 @@
-# React + TypeScript + Vite
+# EATools
+
+1- para levantar el backend es necesario utilizar el docker:
+
+Docker-compose up
+
+2- iniciar el forntend:
+npm install
+npm run dev
+
+3- librerias TANSTACK y axios
+https://tanstack.com/query/latest/docs/framework/react/overview
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

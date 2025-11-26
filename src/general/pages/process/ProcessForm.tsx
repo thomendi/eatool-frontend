@@ -28,6 +28,9 @@ import {
 } from "@/components/ui/sheet";
 
 import { CustomToast} from "@/general/components/CustomToast";
+import type { Artefact } from "@/interfaces/artefacts.response";
+import type { ArtefactRequest} from '@/interfaces/artefact.request';
+import { postArtefactActions } from "@/general/actions/post-artefact.actions";
 
 const processSchema = z.object({
   identificacion: z.string().min(1, "La identificación es requerida"),
@@ -48,26 +51,20 @@ type ProcesoFormValues = z.infer<typeof processSchema>;
 interface ProcesoFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  proceso?: {
-    id: number;
-    nombre: string;
-    categoria: string;
-    estado: string;
-    propietario: string;
-  };
+  proceso?: Artefact;
 }
 export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
   // const { ctoast } = CustomToast();
-  
+
   const form = useForm<ProcesoFormValues>({
     resolver: zodResolver(processSchema),
     defaultValues: {
       identificacion: proceso?.id.toString() || "",
-      nombre: proceso?.nombre || "",
+      nombre: proceso?.name || "",
       descripcion: "",
-      propietario: proceso?.propietario || "",
-      categoria: proceso?.categoria || "",
-      estado: proceso?.estado || "Activo",
+      propietario: proceso?.owner || "",
+      categoria: proceso?.category || "",
+      estado: proceso?.state || "Activo",
       sistemas: "",
       personas: "",
       capacidades: "",
@@ -75,19 +72,48 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
       objetivos: "",
     },
   });
+ const handleCreate = async (data: ProcesoFormValues) => {
+  const artefact: ArtefactRequest = {
+    id: data.identificacion,
+    name: data.nombre,
+    description: data.descripcion,
+    type: "BPMN",
+    level: 2,
+    subtype: "Proceso",
+    alias: "Alias test",
+    category: data.categoria,
+    subcategory: "General",
+    version: "1.0",
+    company: "Mi empresa",
+    owner: data.propietario,
+    state: data.estado,
+    objetive: "Optimizar",
+    range: "Corporativo"
+  };
+
+  try {
+    const res = await postArtefactActions(artefact);
+    CustomToast({title:data.nombre,description:"Creado Correctamente"});
+    console.log("Creado correctamente:", res);
+  } catch (e) {
+    console.error(e);
+  }
+ };
 
   const onSubmit = (data: ProcesoFormValues) => {
     // toast({
     //   title: "Proceso guardado",
     //   description: "Los cambios se han guardado correctamente." + data.descripcion,
     // });
-   
+
    // toast("Esta funcionando");
-    CustomToast({title:data.nombre,description:data.descripcion});
-   
+
+
+   // CustomToast({title:data.nombre,description:data.descripcion});
+    handleCreate(data);
      onOpenChange(false);
-   
-   
+
+
   };
 
   return (
@@ -139,10 +165,10 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Descripción detallada del proceso"
                       className="min-h-[100px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -220,10 +246,10 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
                 <FormItem>
                   <FormLabel>Sistemas Involucrados</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Sistemas y aplicaciones relacionadas"
                       className="min-h-[80px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -238,10 +264,10 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
                 <FormItem>
                   <FormLabel>Personas</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Personas involucradas en el proceso"
                       className="min-h-[80px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -256,10 +282,10 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
                 <FormItem>
                   <FormLabel>Capacidades</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Capacidades organizacionales relacionadas"
                       className="min-h-[80px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -274,10 +300,10 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
                 <FormItem>
                   <FormLabel>Riesgos</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Riesgos asociados al proceso"
                       className="min-h-[80px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -292,10 +318,10 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
                 <FormItem>
                   <FormLabel>Objetivos que Impacta</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <Textarea
                       placeholder="Objetivos estratégicos relacionados"
                       className="min-h-[80px]"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -307,9 +333,9 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
               <Button type="submit" className="flex-1">
                 Guardar
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => onOpenChange(false)}
                 className="flex-1"
               >

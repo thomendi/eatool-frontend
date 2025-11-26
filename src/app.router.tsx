@@ -3,7 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import { HomePage } from './general/pages/home/HomePage'
 import { GeneralLayout } from './general/layouts/GeneralLayout'
 import { ArtifactPage } from './general/pages/artifact/ArtifactPage'
-import { ModelsPage } from './general/pages/models/ModelsPage'
+// import { ModelsPage } from './general/pages/models/ModelsPage'
 import { LoginPage } from './auth/pages/login/LoginPage'
 import { RecoveryPage } from './auth/pages/recovery/RecoveryPage'
 import { DashboardPage } from './admin/pages/dashboard/DashboardPage'
@@ -34,8 +34,12 @@ export const appRouter = createBrowserRouter ([
            element: <ArtifactPage />,
         },
         {
+            path: 'modelsView/:id',
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
+        },
+        {
             path: 'models',
-            element: <ModelsPage/>,   //<ModelsPage ProcessEditPage/>
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
         },
         {
             path: 'process',
