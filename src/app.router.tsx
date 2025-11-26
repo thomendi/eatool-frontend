@@ -10,10 +10,8 @@ import { DashboardPage } from './admin/pages/dashboard/DashboardPage'
 import { AdminArtefactsPage } from './admin/pages/artefacts/AdminArtifactsPage'
 import { AdminArtefactPage } from './admin/pages/artefact/AdminArtifactPage'
 import { ProcessPage } from './general/pages/process/ProcessPage'
-import ModelProcessPage from './general/pages/process/ModelProcessPage'
+import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
 import { DataPage } from './general/pages/data/dataPage'
-
-// import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
 
 
 
