@@ -13,6 +13,7 @@ import { ProcessPage } from './general/pages/process/ProcessPage'
 import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
 import { DataPage } from './general/pages/data/dataPage'
 import ModelProcessPage from './general/pages/process/ModelProcessPage'
+import { ProcessViewPage } from './general/pages/process/ProcessViewPage'
 
 
 
@@ -36,7 +37,7 @@ export const appRouter = createBrowserRouter ([
         },
         {
             path: 'modelsView/:id',
-            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
+            element: <ProcessViewPage/>,   //<ModelsPage ProcessEditPage/>
         },
         {
             path: 'models',

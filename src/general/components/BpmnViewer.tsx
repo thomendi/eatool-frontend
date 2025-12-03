@@ -3,7 +3,7 @@ import Viewer from 'bpmn-js/lib/Viewer'
 import 'bpmn-js/dist/assets/diagram-js.css'
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css'
 
-export default function BpmnViewer({ xml }: { xml: string }) {
+export default function BpmnViewer({ xml, onClick }: { xml: string; onClick?: (element: any) => void }) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const viewerRef = useRef<any>(null)
 
@@ -11,8 +11,17 @@ export default function BpmnViewer({ xml }: { xml: string }) {
     if (!containerRef.current) return
     viewerRef.current = new Viewer({ container: containerRef.current })
     console.log("xml=", xml);
+
+    const eventBus = viewerRef.current.get('eventBus');
+
+    if (onClick) {
+      eventBus.on('element.click', (e: any) => {
+        onClick(e.element);
+      });
+    }
+
     if (xml) {
-     
+
       viewerRef.current.importXML(xml).then(() => {
 
         const canvas = viewerRef.current.get('canvas')
@@ -21,7 +30,7 @@ export default function BpmnViewer({ xml }: { xml: string }) {
     }
 
     return () => viewerRef.current?.destroy()
-  }, [xml])
+  }, [xml, onClick])
 
   return <div ref={containerRef} style={{ width: '100%', height: '300px', border: '1px solid #eee' }} />
 }
