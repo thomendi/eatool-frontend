@@ -17,56 +17,56 @@ import { ProcessViewPage } from './general/pages/process/ProcessViewPage'
 
 
 
-const AuthLayout = lazy(()=> import('./auth/layouts/AuthLayout'));
-const AdminLayouts = lazy(()=> import('./admin/layouts/AdminLayout'));
+const AuthLayout = lazy(() => import('./auth/layouts/AuthLayout'));
+const AdminLayouts = lazy(() => import('./admin/layouts/AdminLayout'));
 
 
-export const appRouter = createBrowserRouter ([
+export const appRouter = createBrowserRouter([
     // Main routes
     {
-       path: '/',
-       element: <GeneralLayout />,
-       children: [
-        {
-           index: true,
-           element: <HomePage />,
-        },
-        {
-           path: 'artifact/:idSlug',
-           element: <ArtifactPage />,
-        },
-        {
-            path: 'modelsView/:id',
-            element: <ProcessViewPage/>,   //<ModelsPage ProcessEditPage/>
-        },
-        {
-            path: 'models',
-            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
-        },
-        {
-            path: 'process',
-            element: <ProcessPage />
-        },
-        {
-            path: 'data',
-            element: <DataPage />
-        },
+        path: '/',
+        element: <GeneralLayout />,
+        children: [
+            {
+                index: true,
+                element: <HomePage />,
+            },
+            {
+                path: 'artifact/:idSlug',
+                element: <ArtifactPage />,
+            },
+            {
+                path: 'modelsView/:id',
+                element: <ProcessViewPage />,   //<ModelsPage ProcessEditPage/>
+            },
+            {
+                path: 'models/:id',
+                element: <ModelProcessPage />,   //<ModelsPage ProcessEditPage/>
+            },
+            {
+                path: 'process',
+                element: <ProcessPage />
+            },
+            {
+                path: 'data',
+                element: <DataPage />
+            },
 
-       ],
+        ],
     },
 
     // Auth Routes
     {
-        path:  '/auth',
+        path: '/auth',
         element: <AuthLayout />,
         children: [
             {
-               index: true,
-               element: <Navigate to="/auth/login" />,
+                index: true,
+                element: <Navigate to="/auth/login" />,
             },
             {
-               path: 'login',
-               element: <LoginPage />,
+                path: 'login',
+                element: <LoginPage />,
             },
             {
                 path: 'recovery',
@@ -80,7 +80,7 @@ export const appRouter = createBrowserRouter ([
         element: <AdminLayouts />,
         children: [
             {
-                index:true,
+                index: true,
                 element: <DashboardPage />,
             },
             {
@@ -98,4 +98,4 @@ export const appRouter = createBrowserRouter ([
         path: '*',
         element: <Navigate to="/" />,
     },
-]) ;
+]);

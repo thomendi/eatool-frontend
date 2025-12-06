@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -58,6 +59,7 @@ interface ProcesoFormProps {
 export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
   // const { ctoast } = CustomToast();
   console.log("ESTE ES EL VALOR DE id:", proceso?.id);
+  const navigate = useNavigate();
   const form = useForm<ProcesoFormValues>({
     resolver: zodResolver(processSchema),
     defaultValues: {
@@ -146,6 +148,16 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleSaveAndDesign = async (data: ProcesoFormValues) => {
+    if (proceso) {
+      await handleUpdate(data);
+    } else {
+      await handleCreate(data);
+    }
+    onOpenChange(false);
+    navigate(`/models/${data.identificacion}`);
   };
 
   const onSubmit = (data: ProcesoFormValues) => {
@@ -385,6 +397,13 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
             <div className="flex gap-3 pt-4">
               <Button type="submit" className="flex-1">
                 Guardar
+              </Button>
+              <Button
+                type="button"
+                className="flex-1 bg-green-600 hover:bg-green-700"
+                onClick={form.handleSubmit(handleSaveAndDesign)}
+              >
+                Guardar y Diseñar
               </Button>
               <Button
                 type="button"
