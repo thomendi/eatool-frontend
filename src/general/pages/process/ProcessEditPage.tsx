@@ -6,7 +6,7 @@ import { useParams } from "react-router";
 
 export const ProcessEditPage = () => {
   const { id } = useParams();
-const [diagrams, setDiagrams] = useState<DiagramsResponse | null>(null);
+  const [diagrams, setDiagrams] = useState<DiagramsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,12 +28,12 @@ const [diagrams, setDiagrams] = useState<DiagramsResponse | null>(null);
 
   return (
     <div>
-          <h1>{ id }</h1>
-          <h3>Este es: { diagrams[0]?.name }</h3>
-          <DrawIoEmbed urlParameters={{
-              lightbox: true,
-            }}
-            xml= {diagrams[0]?.diagram}/>
+      <h1>{id}</h1>
+      <h3>Este es: {diagrams[0]?.name}</h3>
+      <DrawIoEmbed urlParameters={{
+        lightbox: true,
+      }}
+        xml={diagrams[0]?.diagram} />
     </div>
   )
 }
