@@ -13,6 +13,8 @@ import { ProcessPage } from './general/pages/process/ProcessPage'
 import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
 import { DataPage } from './general/pages/data/dataPage'
 import ModelProcessPage from './general/pages/process/ModelProcessPage'
+import { Applications } from './general/pages/apps/Applications'
+import { Roles } from './general/pages/roles/Roles'
 
 
 
@@ -49,6 +51,14 @@ export const appRouter = createBrowserRouter ([
         {
             path: 'data',
             element: <DataPage />
+        },
+        {
+            path: 'apps',
+            element: <Applications />
+        },
+        {
+            path: 'roles',
+            element: <Roles />
         },
 
        ],

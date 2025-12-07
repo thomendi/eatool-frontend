@@ -1,6 +1,6 @@
 
 import { Outlet } from 'react-router'
-import { Sidebar } from '../components/Sidebar'
+import { Sidebar } from '@/general/components/Sidebar.tsx'
 import {Toaster} from 'react-hot-toast'
 
 
