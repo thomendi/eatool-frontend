@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -27,10 +29,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-import { CustomToast} from "@/general/components/CustomToast";
+import { CustomToast } from "@/general/components/CustomToast";
 import type { Artefact } from "@/interfaces/artefacts.response";
-import type { ArtefactRequest} from '@/interfaces/artefact.request';
+import type { ArtefactRequest } from '@/interfaces/artefact.request';
 import { postArtefactActions } from "@/general/actions/post-artefact.actions";
+import { putArtefactActions } from "@/general/actions/put-artefact.actions";
 
 const processSchema = z.object({
   identificacion: z.string().min(1, "La identificación es requerida"),
@@ -55,13 +58,14 @@ interface ProcesoFormProps {
 }
 export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
   // const { ctoast } = CustomToast();
-
+  console.log("ESTE ES EL VALOR DE id:", proceso?.id);
+  const navigate = useNavigate();
   const form = useForm<ProcesoFormValues>({
     resolver: zodResolver(processSchema),
     defaultValues: {
       identificacion: proceso?.id.toString() || "",
       nombre: proceso?.name || "",
-      descripcion: "",
+      descripcion: proceso?.description || "",
       propietario: proceso?.owner || "",
       categoria: proceso?.category || "",
       estado: proceso?.state || "Activo",
@@ -69,36 +73,92 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
       personas: "",
       capacidades: "",
       riesgos: "",
-      objetivos: "",
+      objetivos: proceso?.objetive || "",
     },
   });
- const handleCreate = async (data: ProcesoFormValues) => {
-  const artefact: ArtefactRequest = {
-    id: data.identificacion,
-    name: data.nombre,
-    description: data.descripcion,
-    type: "BPMN",
-    level: 2,
-    subtype: "Proceso",
-    alias: "Alias test",
-    category: data.categoria,
-    subcategory: "General",
-    version: "1.0",
-    company: "Mi empresa",
-    owner: data.propietario,
-    state: data.estado,
-    objetive: "Optimizar",
-    range: "Corporativo"
+
+  useEffect(() => {
+    if (proceso) {
+      form.reset({
+        identificacion: proceso.id.toString(),
+        nombre: proceso.name,
+        descripcion: proceso.description || "",
+        propietario: proceso.owner,
+        categoria: proceso.category,
+        estado: proceso.state,
+        sistemas: "",
+        personas: "",
+        capacidades: "",
+        riesgos: "",
+        objetivos: proceso.objetive || "",
+      });
+    }
+  }, [proceso, form]);
+  const handleCreate = async (data: ProcesoFormValues) => {
+    const artefact: ArtefactRequest = {
+      id: data.identificacion,
+      name: data.nombre,
+      description: data.descripcion,
+      type: "BPMN",
+      level: 2,
+      subtype: "Proceso",
+      alias: "Alias test",
+      category: data.categoria,
+      subcategory: "General",
+      version: "1.0",
+      company: "Mi empresa",
+      owner: data.propietario,
+      state: data.estado,
+      objetive: "Optimizar",
+      range: "Corporativo"
+    };
+
+    try {
+      const res = await postArtefactActions(artefact);
+      CustomToast({ title: data.nombre, description: "Creado Correctamente" });
+      console.log("Creado correctamente:", res);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  try {
-    const res = await postArtefactActions(artefact);
-    CustomToast({title:data.nombre,description:"Creado Correctamente"});
-    console.log("Creado correctamente:", res);
-  } catch (e) {
-    console.error(e);
-  }
- };
+  const handleUpdate = async (data: ProcesoFormValues) => {
+    const artefact: ArtefactRequest = {
+      id: data.identificacion,
+      name: data.nombre,
+      description: data.descripcion,
+      type: "BPMN",
+      level: 2,
+      subtype: "Proceso",
+      alias: "Alias test",
+      category: data.categoria,
+      subcategory: "General",
+      version: "1.0",
+      company: "Mi empresa",
+      owner: data.propietario,
+      state: data.estado,
+      objetive: data.objetivos || "Optimizar",
+      range: "Corporativo"
+    };
+
+    try {
+      const res = await putArtefactActions(data.identificacion, artefact);
+      CustomToast({ title: data.nombre, description: "Actualizado Correctamente" });
+      console.log("Actualizado correctamente:", res);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSaveAndDesign = async (data: ProcesoFormValues) => {
+    if (proceso) {
+      await handleUpdate(data);
+    } else {
+      await handleCreate(data);
+    }
+    onOpenChange(false);
+    navigate(`/models/${data.identificacion}`);
+  };
 
   const onSubmit = (data: ProcesoFormValues) => {
     // toast({
@@ -106,12 +166,17 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
     //   description: "Los cambios se han guardado correctamente." + data.descripcion,
     // });
 
-   // toast("Esta funcionando");
+    // toast("Esta funcionando");
 
 
-   // CustomToast({title:data.nombre,description:data.descripcion});
-    handleCreate(data);
-     onOpenChange(false);
+    // CustomToast({title:data.nombre,description:data.descripcion});
+    if (proceso) {
+      handleUpdate(data);
+    }
+    else {
+      handleCreate(data);
+    }
+    onOpenChange(false);
 
 
   };
@@ -332,6 +397,13 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
             <div className="flex gap-3 pt-4">
               <Button type="submit" className="flex-1">
                 Guardar
+              </Button>
+              <Button
+                type="button"
+                className="flex-1 bg-green-600 hover:bg-green-700"
+                onClick={form.handleSubmit(handleSaveAndDesign)}
+              >
+                Guardar y Diseñar
               </Button>
               <Button
                 type="button"

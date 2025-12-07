@@ -4,12 +4,13 @@ import 'bpmn-js/dist/assets/diagram-js.css'
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css'
 import "bpmn-js/dist/assets/bpmn-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
-// import 'bpmn-js-color-picker/dist/index.css';
+import 'bpmn-js-color-picker/colors/color-picker.css';
 // import contextPadModule from 'bpmn-js/lib/features/context-pad';import appendModule from 'diagram-js/lib/features/append'
 // import modelingModule from 'bpmn-js/lib/features/modeling';
 // import paletteModule from 'bpmn-js/lib/features/palette';
 // import contextPadModule from 'bpmn-js/lib/features/context-pad';
-// import colorPickerModule from "bpmn-js-color-picker";
+import colorPickerModule from "bpmn-js-color-picker";
+import { Button } from "@/general/components/ui/button";
 
 type Props = {
   initialXml?: string | null
@@ -20,28 +21,22 @@ export default function BpmnEditor({ initialXml, onExport }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const modelerRef = useRef<any>(null)
   // Inicializa el modeler cuando el componente monta
- // useEffect(() => {
+  // useEffect(() => {
   //  if (!containerRef.current) return
 
- //   modelerRef.current = new Modeler({
- //     container: containerRef.current,
-     // keyboard: { bindTo: document }
-// (())    })
-//  }, [])
+  //   modelerRef.current = new Modeler({
+  //     container: containerRef.current,
+  // keyboard: { bindTo: document }
+  // (())    })
+  //  }, [])
 
-    useEffect(() => {
-    modelerRef.current = new Modeler({ container: containerRef.current!,
-  //     additionalModules: [
-    // BPMN base features
-  //  require('bpmn-js/lib/features/palette').default,
-  //  require('bpmn-js/lib/features/context-pad').default,
-  //  require('bpmn-js/lib/features/modeling').default,
-  //  require('diagram-js/lib/features/append').default,
-
-    // Color picker
-  //  require('bpmn-js-color-picker').default
- // ]
-     })
+  useEffect(() => {
+    modelerRef.current = new Modeler({
+      container: containerRef.current!,
+      additionalModules: [
+        colorPickerModule
+      ]
+    })
 
     if (initialXml) {
       modelerRef.current.importXML(initialXml).catch((e: any) => console.error(e))
@@ -95,16 +90,18 @@ export default function BpmnEditor({ initialXml, onExport }: Props) {
 
   return (
     <>
-      <button onClick={createNewDiagram}>
-        Crear nuevo diagrama
-      </button>
+      <div className="flex gap-2 mb-2">
+        <Button onClick={createNewDiagram} variant="secondary">
+          Crear nuevo diagrama
+        </Button>
+      </div>
 
       <div
         ref={containerRef}
         style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
       />
-       <div style={{ marginTop: 8 }}>
-        <button onClick={handleExport}>Exportar (guardar)</button>
+      <div style={{ marginTop: 8 }} className="flex justify-end">
+        <Button onClick={handleExport}>Exportar (guardar)</Button>
       </div>
     </>
   )

@@ -18,11 +18,11 @@ import { Roles } from './general/pages/roles/Roles'
 
 
 
-const AuthLayout = lazy(()=> import('./auth/layouts/AuthLayout'));
-const AdminLayouts = lazy(()=> import('./admin/layouts/AdminLayout'));
+const AuthLayout = lazy(() => import('./auth/layouts/AuthLayout'));
+const AdminLayouts = lazy(() => import('./admin/layouts/AdminLayout'));
 
 
-export const appRouter = createBrowserRouter ([
+export const appRouter = createBrowserRouter([
     // Main routes
     {
        path: '/',
@@ -61,21 +61,21 @@ export const appRouter = createBrowserRouter ([
             element: <Roles />
         },
 
-       ],
+        ],
     },
 
     // Auth Routes
     {
-        path:  '/auth',
+        path: '/auth',
         element: <AuthLayout />,
         children: [
             {
-               index: true,
-               element: <Navigate to="/auth/login" />,
+                index: true,
+                element: <Navigate to="/auth/login" />,
             },
             {
-               path: 'login',
-               element: <LoginPage />,
+                path: 'login',
+                element: <LoginPage />,
             },
             {
                 path: 'recovery',
@@ -89,7 +89,7 @@ export const appRouter = createBrowserRouter ([
         element: <AdminLayouts />,
         children: [
             {
-                index:true,
+                index: true,
                 element: <DashboardPage />,
             },
             {
@@ -107,4 +107,4 @@ export const appRouter = createBrowserRouter ([
         path: '*',
         element: <Navigate to="/" />,
     },
-]) ;
+]);
