@@ -13,7 +13,8 @@ import { ProcessPage } from './general/pages/process/ProcessPage'
 import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
 import { DataPage } from './general/pages/data/dataPage'
 import ModelProcessPage from './general/pages/process/ModelProcessPage'
-import { ProcessViewPage } from './general/pages/process/ProcessViewPage'
+import { Applications } from './general/pages/apps/Applications'
+import { Roles } from './general/pages/roles/Roles'
 
 
 
@@ -24,33 +25,41 @@ const AdminLayouts = lazy(() => import('./admin/layouts/AdminLayout'));
 export const appRouter = createBrowserRouter([
     // Main routes
     {
-        path: '/',
-        element: <GeneralLayout />,
-        children: [
-            {
-                index: true,
-                element: <HomePage />,
-            },
-            {
-                path: 'artifact/:idSlug',
-                element: <ArtifactPage />,
-            },
-            {
-                path: 'modelsView/:id',
-                element: <ProcessViewPage />,   //<ModelsPage ProcessEditPage/>
-            },
-            {
-                path: 'models/:id',
-                element: <ModelProcessPage />,   //<ModelsPage ProcessEditPage/>
-            },
-            {
-                path: 'process',
-                element: <ProcessPage />
-            },
-            {
-                path: 'data',
-                element: <DataPage />
-            },
+       path: '/',
+       element: <GeneralLayout />,
+       children: [
+        {
+           index: true,
+           element: <HomePage />,
+        },
+        {
+           path: 'artifact/:idSlug',
+           element: <ArtifactPage />,
+        },
+        {
+            path: 'modelsView/:id',
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
+        },
+        {
+            path: 'models',
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
+        },
+        {
+            path: 'process',
+            element: <ProcessPage />
+        },
+        {
+            path: 'data',
+            element: <DataPage />
+        },
+        {
+            path: 'apps',
+            element: <Applications />
+        },
+        {
+            path: 'roles',
+            element: <Roles />
+        },
 
         ],
     },

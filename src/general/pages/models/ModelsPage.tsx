@@ -1,9 +1,6 @@
 import { DrawIoEmbed, type EventSave } from 'react-drawio'; 
 
 export const ModelsPage = () => {
-import { DrawIoEmbed, type EventSave } from 'react-drawio'; 
-
-export const ModelsPage = () => {
     
     // Función simulada para el envío de datos al backend
     const enviarDatosAlBackend = async (nombre: string, xmlData: string) => {

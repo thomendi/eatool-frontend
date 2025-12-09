@@ -20,7 +20,7 @@ const menuItems = [
   { icon: GitBranch, label: "Procesos", path: "/process" },
   { icon: Layers, label: "Capacidades", path: "/capacidades" },
   { icon: Users, label: "Roles y Funciones", path: "/roles" },
-  { icon: AppWindow, label: "Aplicaciones", path: "/aplicaciones" },
+  { icon: AppWindow, label: "Aplicaciones", path: "/apps" },
   { icon: Target, label: "Objetivos", path: "/objetivos" },
   { icon: AlertTriangle, label: "Riesgos", path: "/riesgos" },
   { icon: Server, label: "Infraestructura", path: "/infraestructura" },
