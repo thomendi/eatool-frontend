@@ -1,21 +1,28 @@
 import axios from 'axios'
 import type { DiagramModel } from '../interfaces/diagram'
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_URL,  headers: {
-        "Content-Type": "application/json"
-    } })
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL, headers: {
+    "Content-Type": "application/json"
+  }
+})
 
-    api.interceptors.request.use((config) => {
-        const token = import.meta.env.VITE_TOKEN;
+api.interceptors.request.use((config) => {
+  const token = import.meta.env.VITE_TOKEN;
 
-        if (token) {
-            config.headers.Authorization = `Token ${token}` ;
-        }
+  if (token) {
+    config.headers.Authorization = `Token ${token}`;
+  }
 
-        return config;
-    });
+  return config;
+});
 export const insertDiagram = async (payload: DiagramModel) => {
   const res = await api.post('/diagrams/diagram/', payload)
+  return res.data
+}
+
+export const updateDiagram = async (id: number, payload: DiagramModel) => {
+  const res = await api.put(`/diagrams/diagram/${id}/`, payload)
   return res.data
 }
 

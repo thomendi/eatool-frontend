@@ -6,7 +6,7 @@ import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
 import { useParams } from "react-router";
-import { insertDiagram, getDiagramByIdart, listDiagrams } from '../../../api/diagramService'
+import { insertDiagram, updateDiagram, getDiagramByIdart, listDiagrams } from '../../../api/diagramService'
 import { CustomPageHeader } from "@/general/components/CustomPageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/general/components/ui/button";
@@ -21,7 +21,10 @@ export default function ModelProcessPage() {
 
   useEffect(() => {
     loadList()
-  }, [])
+    if (id) {
+      handleLoadByIdart(id)
+    }
+  }, [id])
 
   async function loadList() {
     try {
@@ -32,18 +35,21 @@ export default function ModelProcessPage() {
     }
   }
 
-  async function handleLoadByIdart() {
+  async function handleLoadByIdart(targetId: string = idartQuery) {
     try {
-      const items = await getDiagramByIdart(idartQuery)
-      if (items.length) setSelected(items[0])
-      else alert('No encontrado')
+      const items = await getDiagramByIdart(targetId)
+      if (items.length) {
+        setSelected(items[0])
+        setIdartQuery(items[0].idart)
+      }
+      // else alert('No encontrado') // Optional: Don't alert on auto-load
     } catch (err) {
       console.error(err)
     }
   }
 
   async function handleSaveXml(xml: string) {
-    const name = prompt('Nombre del diagrama') || 'Sin nombre';
+    const name = prompt('Nombre del diagrama', selected?.name) || 'Sin nombre';
 
     const payload: DiagramModel = {
       idart: id, // Use the ID from the URL
@@ -52,9 +58,17 @@ export default function ModelProcessPage() {
       version: '1.0',
       diagram: xml
     }
-    await insertDiagram(payload)
+
+    if (selected && selected.id) {
+      await updateDiagram(selected.id, payload)
+      alert('Actualizado OK')
+    } else {
+      await insertDiagram(payload)
+      alert('Guardado OK')
+    }
     await loadList()
-    alert('Guardado OK')
+    // Reload current diagram to ensure state is synced
+    await handleLoadByIdart(id)
   }
 
   return (
@@ -97,7 +111,7 @@ export default function ModelProcessPage() {
                     placeholder="ID..."
                     className="h-9"
                   />
-                  <Button size="sm" variant="outline" onClick={handleLoadByIdart}>
+                  <Button size="sm" variant="outline" onClick={() => handleLoadByIdart()}>
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>

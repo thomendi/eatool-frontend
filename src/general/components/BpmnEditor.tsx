@@ -1,23 +1,27 @@
 import React, { useEffect, useRef } from 'react'
+import { useNavigate } from "react-router";
 import Modeler from 'bpmn-js/lib/Modeler'
 import 'bpmn-js/dist/assets/diagram-js.css'
 import 'bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css'
 import "bpmn-js/dist/assets/bpmn-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
+import "bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css";
 import 'bpmn-js-color-picker/colors/color-picker.css';
 // import contextPadModule from 'bpmn-js/lib/features/context-pad';import appendModule from 'diagram-js/lib/features/append'
 // import modelingModule from 'bpmn-js/lib/features/modeling';
 // import paletteModule from 'bpmn-js/lib/features/palette';
 // import contextPadModule from 'bpmn-js/lib/features/context-pad';
 import colorPickerModule from "bpmn-js-color-picker";
+import { CreateAppendAnythingModule } from 'bpmn-js-create-append-anything';
 import { Button } from "@/general/components/ui/button";
 
 type Props = {
   initialXml?: string | null
-  onExport?: (xml: string) => void
+  onExport?: (xml: string) => void | Promise<void>
 }
 
 export default function BpmnEditor({ initialXml, onExport }: Props) {
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null)
   const modelerRef = useRef<any>(null)
   // Inicializa el modeler cuando el componente monta
@@ -31,10 +35,17 @@ export default function BpmnEditor({ initialXml, onExport }: Props) {
   //  }, [])
 
   useEffect(() => {
+    if (initialXml && modelerRef.current) {
+      modelerRef.current.importXML(initialXml).catch((e: any) => console.error(e))
+    }
+  }, [initialXml])
+
+  useEffect(() => {
     modelerRef.current = new Modeler({
       container: containerRef.current!,
       additionalModules: [
-        colorPickerModule
+        colorPickerModule,
+        CreateAppendAnythingModule
       ]
     })
 
@@ -79,10 +90,11 @@ export default function BpmnEditor({ initialXml, onExport }: Props) {
     }
   }
 
-  async function handleExport() {
+  async function handleSave() {
     try {
       const { xml } = await modelerRef.current.saveXML({ format: true })
-      if (onExport) onExport(xml)
+      if (onExport) await onExport(xml)
+      navigate('/process')
     } catch (err) {
       console.error('Error exporting XML', err)
     }
@@ -98,10 +110,10 @@ export default function BpmnEditor({ initialXml, onExport }: Props) {
 
       <div
         ref={containerRef}
-        style={{ width: "100%", height: "600px", border: "1px solid #ccc" }}
+        style={{ width: "100%", height: "800px", border: "1px solid #ccc" }}
       />
       <div style={{ marginTop: 8 }} className="flex justify-end">
-        <Button onClick={handleExport}>Exportar (guardar)</Button>
+        <Button onClick={handleSave}>Guardar</Button>
       </div>
     </>
   )
