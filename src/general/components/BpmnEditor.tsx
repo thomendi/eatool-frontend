@@ -15,12 +15,24 @@ import colorPickerModule from "bpmn-js-color-picker";
 import { CreateAppendAnythingModule } from 'bpmn-js-create-append-anything';
 import { Button } from "@/general/components/ui/button";
 
+export interface BpmnElement {
+  id: string
+  type: string
+  businessObject: {
+    name?: string
+    [key: string]: any
+  }
+}
+
 type Props = {
   initialXml?: string | null
   onExport?: (xml: string) => void | Promise<void>
+  onSelectionChange?: (element: BpmnElement | null) => void
+  elementToUpdate?: { id: string, name: string } | null
+  onModelLoaded?: (modeler: any) => void
 }
 
-export default function BpmnEditor({ initialXml, onExport }: Props) {
+export default function BpmnEditor({ initialXml, onExport, onSelectionChange, elementToUpdate, onModelLoaded }: Props) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null)
   const modelerRef = useRef<any>(null)
@@ -36,7 +48,11 @@ export default function BpmnEditor({ initialXml, onExport }: Props) {
 
   useEffect(() => {
     if (initialXml && modelerRef.current) {
-      modelerRef.current.importXML(initialXml).catch((e: any) => console.error(e))
+      modelerRef.current.importXML(initialXml)
+        .then(() => {
+          if (onModelLoaded) onModelLoaded(modelerRef.current)
+        })
+        .catch((e: any) => console.error(e))
     }
   }, [initialXml])
 
@@ -49,14 +65,41 @@ export default function BpmnEditor({ initialXml, onExport }: Props) {
       ]
     })
 
+    modelerRef.current.on('selection.changed', (e: any) => {
+      const selection = e.newSelection
+      if (onSelectionChange) {
+        if (selection.length > 0) {
+          onSelectionChange(selection[0])
+        } else {
+          onSelectionChange(null)
+        }
+      }
+    })
+
     if (initialXml) {
-      modelerRef.current.importXML(initialXml).catch((e: any) => console.error(e))
+      modelerRef.current.importXML(initialXml)
+        .then(() => {
+          if (onModelLoaded) onModelLoaded(modelerRef.current)
+        })
+        .catch((e: any) => console.error(e))
     } else {
       createNewDiagram()
     }
 
     return () => modelerRef.current?.destroy()
   }, [])
+
+  useEffect(() => {
+    if (modelerRef.current && elementToUpdate) {
+      const elementRegistry = modelerRef.current.get('elementRegistry');
+      const modeling = modelerRef.current.get('modeling');
+      const element = elementRegistry.get(elementToUpdate.id);
+
+      if (element) {
+        modeling.updateLabel(element, elementToUpdate.name);
+      }
+    }
+  }, [elementToUpdate])
   async function createNewDiagram() {
     if (!modelerRef.current) {
       console.error("❌ Modeler no ha sido inicializado todavía")

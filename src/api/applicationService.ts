@@ -7,6 +7,15 @@ export interface Application {
   developer: string;
   status: "active" | "maintenance" | "deprecated";
   activeUsers: number;
+  // New fields
+  description?: string;
+  os?: string;
+  language?: string;
+  framework?: string;
+  security?: string;
+  type?: string;
+  priority?: string;
+  lastUpdated?: string;
 }
 
 // Obtener todas las aplicaciones
