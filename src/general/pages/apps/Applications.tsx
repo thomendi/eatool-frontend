@@ -13,6 +13,7 @@ export const Applications = () => {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingApp, setEditingApp] = useState<Application | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // --------------------------
@@ -39,16 +40,23 @@ export const Applications = () => {
   );
 
   // --------------------------
-  // Add new application
+  // Add or Update application
   // --------------------------
-  const handleAddApplication = (newApp: Application) => {
-    // Solo agregamos la aplicación que devuelve el modal
-    setApplications((prev) => [newApp, ...prev]);
+  const handleSaveApplication = (app: Application) => {
+    if (editingApp) {
+      // Update existing application
+      setApplications((prev) =>
+        prev.map((item) => (item.id === app.id ? app : item))
+      );
+    } else {
+      // Add new application
+      setApplications((prev) => [app, ...prev]);
+    }
   };
 
   const handleCardClick = (app: Application) => {
-    setSelectedApp(app);
-    setIsDetailOpen(true);
+    setEditingApp(app);
+    setIsAddOpen(true);
   };
 
   const totalUsers = applications.reduce((sum, app) => sum + app.activeUsers, 0);
@@ -146,8 +154,12 @@ export const Applications = () => {
 
         <AddApplicationModal
           open={isAddOpen}
-          onOpenChange={setIsAddOpen}
-          onAdd={handleAddApplication} // <-- aquí solo agregamos la app devuelta por el modal
+          onOpenChange={(open) => {
+            setIsAddOpen(open);
+            if (!open) setEditingApp(null);
+          }}
+          onAdd={handleSaveApplication}
+          applicationToEdit={editingApp}
         />
       </div>
     </div>
