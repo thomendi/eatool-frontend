@@ -15,6 +15,7 @@ interface RiskDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdated: (risk: Risk) => void;
+  onDeleted: (id: number) => void;
 }
 
 const levelColors = {
@@ -29,6 +30,7 @@ export function RiskDetailModal({
   open,
   onOpenChange,
   onUpdated,
+  onDeleted,
 }: RiskDetailModalProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Risk | null>(null);
@@ -56,6 +58,20 @@ export function RiskDetailModal({
     onUpdated(updated);
     onOpenChange(false);
   };
+  const handleDelete = async () => {
+  if (!risk) return;
+
+  const confirmed = window.confirm(
+    '¿Estás seguro de que deseas eliminar este riesgo? Esta acción no se puede deshacer.'
+  );
+
+  if (!confirmed) return;
+
+  await riskService.remove(risk.id);
+
+  onDeleted(risk.id);
+  onOpenChange(false);
+};
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -201,18 +217,26 @@ export function RiskDetailModal({
           </div>
         </div>
 
-        <DialogFooter className="mt-6">
-          {isEditing ? (
-            <>
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSave}>Guardar</Button>
-            </>
-          ) : (
-            <Button onClick={() => setIsEditing(true)}>Editar</Button>
-          )}
-        </DialogFooter>
+        <DialogFooter className="mt-6 flex justify-between">
+  <Button
+    variant="destructive"
+    onClick={handleDelete}
+    disabled={isEditing}
+  >
+    Eliminar
+  </Button>
+
+  {isEditing ? (
+    <div className="flex gap-2">
+      <Button variant="outline" onClick={() => setIsEditing(false)}>
+        Cancelar
+      </Button>
+      <Button onClick={handleSave}>Guardar</Button>
+    </div>
+  ) : (
+    <Button onClick={() => setIsEditing(true)}>Editar</Button>
+  )}
+</DialogFooter>
       </DialogContent>
     </Dialog>
   );

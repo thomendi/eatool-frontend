@@ -36,6 +36,10 @@ export const Risks = () => {
     prev.map((r) => (r.id === updated.id ? updated : r))
   );
 };
+  const handleDeleteRisk = (id: number) => {
+  setRisks((prev) => prev.filter((r) => r.id !== id));
+  setSelectedRisk(null);
+};
 
   const criticalCount = risks.filter(r => r.level === 'Crítico').length;
   const highCount = risks.filter(r => r.level === 'Alto').length;
@@ -94,6 +98,7 @@ export const Risks = () => {
         open={isDetailOpen}
         onOpenChange={setIsDetailOpen}
         onUpdated={handleUpdateRisk}
+        onDeleted={handleDeleteRisk}
       />
 
       <AddRiskModal
