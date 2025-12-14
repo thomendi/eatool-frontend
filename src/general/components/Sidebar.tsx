@@ -22,7 +22,7 @@ const menuItems = [
   { icon: Users, label: "Roles y Funciones", path: "/roles" },
   { icon: AppWindow, label: "Aplicaciones", path: "/apps" },
   { icon: Target, label: "Objetivos", path: "/objetivos" },
-  { icon: AlertTriangle, label: "Riesgos", path: "/riesgos" },
+  { icon: AlertTriangle, label: "Riesgos", path: "/risks" },
   { icon: Server, label: "Infraestructura", path: "/infraestructura" },
   { icon: CombineIcon, label: "Modelos", path: "/models" },
   { icon: ChartBar, label: "Datos", path: "/data" },
