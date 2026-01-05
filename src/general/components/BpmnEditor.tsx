@@ -28,11 +28,12 @@ type Props = {
   initialXml?: string | null
   onExport?: (xml: string) => void | Promise<void>
   onSelectionChange?: (element: BpmnElement | null) => void
+  onElementDoubleClick?: (element: BpmnElement) => void
   elementToUpdate?: { id: string, name: string } | null
   onModelLoaded?: (modeler: any) => void
 }
 
-export default function BpmnEditor({ initialXml, onExport, onSelectionChange, elementToUpdate, onModelLoaded }: Props) {
+export default function BpmnEditor({ initialXml, onExport, onSelectionChange, onElementDoubleClick, elementToUpdate, onModelLoaded }: Props) {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement | null>(null)
   const modelerRef = useRef<any>(null)
@@ -75,6 +76,12 @@ export default function BpmnEditor({ initialXml, onExport, onSelectionChange, el
         }
       }
     })
+
+    modelerRef.current.on('element.dblclick', (e: any) => {
+      if (onElementDoubleClick && e.element) {
+        onElementDoubleClick(e.element);
+      }
+    });
 
     if (initialXml) {
       modelerRef.current.importXML(initialXml)

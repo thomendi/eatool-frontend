@@ -15,6 +15,11 @@ import { Button } from "@/general/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Search } from "lucide-react";
+import { ProcessForm } from "./ProcessForm";
+import type { Artefact } from '../../../interfaces/artefacts.response';
+import { getArtefactsSubtypeListActions } from "@/general/actions/get-artefacts-subtype-list.actions";
+import { useRef } from 'react';
+import { getArtefactByIdActions } from "@/general/actions/get-artefact-by-id.actions";
 
 export default function ModelProcessPage() {
   const { id = "PROC-0001" } = useParams();
@@ -27,12 +32,30 @@ export default function ModelProcessPage() {
   const [taskMetadata, setTaskMetadata] = useState<Record<string, { name: string, description: string, owner: string, type: string }>>({})
   const [elementToUpdate, setElementToUpdate] = useState<{ id: string, name: string } | null>(null)
 
+  const [processFormOpen, setProcessFormOpen] = useState(false);
+  const [currentSubProcessArtefact, setCurrentSubProcessArtefact] = useState<Artefact | undefined>(undefined);
+  const [formDefaultName, setFormDefaultName] = useState<string | undefined>(undefined);
+  const [processArtefact, setProcessArtefact] = useState<Artefact | null>(null);
+  const modelerInstanceRef = useRef<any>(null);
+
   useEffect(() => {
     loadList()
     if (id) {
       handleLoadByIdart(id)
+      fetchArtefactDetails(id)
     }
   }, [id])
+
+  const fetchArtefactDetails = async (artefactId: string) => {
+    try {
+      const art = await getArtefactByIdActions(artefactId);
+      setProcessArtefact(art);
+    } catch (error) {
+      console.error("Error loading artefact details:", error);
+    }
+  }
+
+
 
   async function loadList() {
     try {
@@ -56,21 +79,51 @@ export default function ModelProcessPage() {
     }
   }
 
-  async function handleSaveXml(xml: string) {
-    const name = prompt('Nombre del diagrama', selected?.name) || 'Sin nombre';
+  async function handleSaveXml(xml: string, skipPrompt = false) {
+    let name = selected?.name;
+    let shouldSkip = skipPrompt;
+
+    // Use process name for new diagrams and skip prompt
+    if (!selected && processArtefact && !name) {
+      name = processArtefact.name;
+      shouldSkip = true;
+    }
+
+    if (!shouldSkip) {
+      name = prompt('Nombre del diagrama', name || processArtefact?.name) || 'Sin nombre';
+    }
 
     // Persist artefacts
+    if (!name || name === 'Sin nombre') {
+      // alert('El diagrama debe tener un nombre');
+      return;
+    }
     for (const [taskId, data] of Object.entries(taskMetadata)) {
       try {
+        let subcategoryAux = "task";
+        let subtypeAux = "Tarea";
+        if (data.type.includes('Task')) {
+          subcategoryAux = "task";
+          subtypeAux = "Tarea";
+        } else if (data.type.includes('Gateway')) {
+          subcategoryAux = "gateway";
+          subtypeAux = "Gateway";
+        } else if (data.type.includes('SubProcess')) {
+          subcategoryAux = "subprocess";
+          subtypeAux = "Proceso";
+
+        } else if (data.type.includes('Event')) {
+          subcategoryAux = "event";
+        }
         await createLinkedTask({
           name: data.name,
           description: data.description,
           type: data.type,
-          level: 0,
-          subtype: "task", // Default
+          level: 1,
+          subtype: subtypeAux,
           alias: data.name,
           category: "process",
-          subcategory: "task",
+          subcategory: subcategoryAux,
           version: "1.0",
           company: "MyCompany", // Default
           owner: data.owner,
@@ -78,7 +131,8 @@ export default function ModelProcessPage() {
           objetive: data.description,
           range: "local",
           idart: id // The ID of the process
-        })
+        });
+
       } catch (e) {
         console.error(`Failed to save linked task ${taskId}`, e)
       }
@@ -109,8 +163,10 @@ export default function ModelProcessPage() {
     setSelectedElement(element)
     if (element) {
       // Initialize metadata if not exists
+
       setTaskMetadata(prev => {
         if (!prev[element.id]) {
+
           return {
             ...prev,
             [element.id]: {
@@ -121,6 +177,7 @@ export default function ModelProcessPage() {
             }
           }
         }
+        // window.alert(prev[element.id].type);
         return prev
       })
     }
@@ -143,6 +200,7 @@ export default function ModelProcessPage() {
   }
 
   const handleModelLoaded = async (modeler: any) => {
+    modelerInstanceRef.current = modeler;
     try {
       const linkedData = await getLinkedArtefacts(id)
       console.log('Linked artefacts loaded:', linkedData)
@@ -182,6 +240,39 @@ export default function ModelProcessPage() {
     }
   }
 
+  const handleElementDoubleClick = async (element: BpmnElement) => {
+    if (element.type === 'bpmn:SubProcess' || element.type.includes('SubProcess')) {
+      const elementName = element.businessObject.name || '';
+
+      // Save the model first
+      if (modelerInstanceRef.current) {
+        try {
+          const { xml } = await modelerInstanceRef.current.saveXML({ format: true });
+          await handleSaveXml(xml, true); // Skip prompt
+        } catch (err) {
+          console.error("Error saving model on double click", err);
+        }
+      }
+
+      // Check if process exists
+      try {
+        const response = await getArtefactsSubtypeListActions('Proceso');
+        const existingProcess = response.artefacts.find(a => a.name === elementName);
+
+        if (existingProcess) {
+          setCurrentSubProcessArtefact(existingProcess);
+          setFormDefaultName(undefined);
+        } else {
+          setCurrentSubProcessArtefact(undefined);
+          setFormDefaultName(elementName);
+        }
+        setProcessFormOpen(true);
+      } catch (error) {
+        console.error("Error checking process existence", error);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <CustomPageHeader
@@ -207,6 +298,7 @@ export default function ModelProcessPage() {
                   onSelectionChange={handleSelectionChange}
                   elementToUpdate={elementToUpdate}
                   onModelLoaded={handleModelLoaded}
+                  onElementDoubleClick={handleElementDoubleClick}
                 />
               </CardContent>
             </Card>
@@ -312,6 +404,13 @@ export default function ModelProcessPage() {
           </div>
         </div>
       </div>
+
+      <ProcessForm
+        open={processFormOpen}
+        onOpenChange={setProcessFormOpen}
+        proceso={currentSubProcessArtefact}
+        defaultName={formDefaultName}
+      />
     </div>
   )
 }

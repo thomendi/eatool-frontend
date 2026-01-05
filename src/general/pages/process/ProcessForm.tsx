@@ -55,8 +55,9 @@ interface ProcesoFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   proceso?: Artefact;
+  defaultName?: string;
 }
-export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
+export function ProcessForm({ open, onOpenChange, proceso, defaultName }: ProcesoFormProps) {
   // const { ctoast } = CustomToast();
   console.log("ESTE ES EL VALOR DE id:", proceso?.id);
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
     resolver: zodResolver(processSchema),
     defaultValues: {
       identificacion: proceso?.id.toString() || "",
-      nombre: proceso?.name || "",
+      nombre: proceso?.name || defaultName || "",
       descripcion: proceso?.description || "",
       propietario: proceso?.owner || "",
       categoria: proceso?.category || "",
@@ -92,8 +93,22 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
         riesgos: "",
         objetivos: proceso.objetive || "",
       });
+    } else if (defaultName) {
+      form.reset({
+        identificacion: "",
+        nombre: defaultName,
+        descripcion: "",
+        propietario: "",
+        categoria: "",
+        estado: "Activo",
+        sistemas: "",
+        personas: "",
+        capacidades: "",
+        riesgos: "",
+        objetivos: "",
+      });
     }
-  }, [proceso, form]);
+  }, [proceso, defaultName, form]);
   const handleCreate = async (data: ProcesoFormValues) => {
     const artefact: ArtefactRequest = {
       id: data.identificacion,
@@ -157,7 +172,7 @@ export function ProcessForm({ open, onOpenChange, proceso }: ProcesoFormProps) {
       await handleCreate(data);
     }
     onOpenChange(false);
-    navigate(`/models/${data.identificacion}`);
+    navigate(`/modelsView/${data.identificacion}`);
   };
 
   const onSubmit = (data: ProcesoFormValues) => {
