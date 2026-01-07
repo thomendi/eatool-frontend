@@ -16,6 +16,7 @@ import ModelProcessPage from './general/pages/process/ModelProcessPage'
 import { ProcessViewerPage } from './general/pages/process/ProcessViewerPage'
 import { Applications } from './general/pages/apps/Applications'
 import { Roles } from './general/pages/roles/Roles'
+import { Risks } from './general/pages/risks/Risks'
 
 
 
@@ -26,45 +27,49 @@ const AdminLayouts = lazy(() => import('./admin/layouts/AdminLayout'));
 export const appRouter = createBrowserRouter([
     // Main routes
     {
-        path: '/',
-        element: <GeneralLayout />,
-        children: [
-            {
-                index: true,
-                element: <HomePage />,
-            },
-            {
-                path: 'artifact/:idSlug',
-                element: <ArtifactPage />,
-            },
-            {
-                path: 'modelsView/:id',
-                element: <ModelProcessPage />,   //<ModelsPage ProcessEditPage/>
-            },
-            {
-                path: 'models',
-                element: <ModelProcessPage />,   //<ModelsPage ProcessEditPage/>
-            },
-            {
-                path: 'process',
-                element: <ProcessPage />
-            },
-            {
+       path: '/',
+       element: <GeneralLayout />,
+       children: [
+        {
+           index: true,
+           element: <HomePage />,
+        },
+        {
+           path: 'artifact/:idSlug',
+           element: <ArtifactPage />,
+        },
+        {
+            path: 'modelsView/:id',
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
+        },
+        {
+            path: 'models',
+            element: <ModelProcessPage/>,   //<ModelsPage ProcessEditPage/>
+        },
+        {
+            path: 'process',
+            element: <ProcessPage />
+        },
+        {
                 path: 'process-viewer/:id',
                 element: <ProcessViewerPage />
-            },
-            {
-                path: 'data',
-                element: <DataPage />
-            },
-            {
-                path: 'apps',
-                element: <Applications />
-            },
-            {
-                path: 'roles',
-                element: <Roles />
-            },
+        },
+        {
+            path: 'data',
+            element: <DataPage />
+        },
+        {
+            path: 'apps',
+            element: <Applications />
+        },
+        {
+            path: 'roles',
+            element: <Roles />
+        },
+        {
+            path: 'risks',
+            element: <Risks />
+        },
 
         ],
     },
