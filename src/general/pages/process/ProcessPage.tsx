@@ -1,13 +1,15 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CustomPageHeader } from "@/general/components/CustomPageHeader";
 import { Button } from "@/general/components/ui/button";
-import { Plus, Pencil, Trash } from "lucide-react";
-import { useState } from "react";
+import { Plus, Pencil, Trash, Upload, Eye } from "lucide-react";
+import { useState, useRef } from "react";
 import { ProcessForm } from "./ProcessForm";
 import { useArtefacts } from "@/general/hooks/useArtefacts";
 import type { Artefact } from '../../../interfaces/artefacts.response';
 import { useNavigate } from "react-router";
 import { deleteArtefactActions } from "@/general/actions/delete-artefact.actions";
+import { patchDiagramActions } from "@/general/actions/patch-diagram.actions";
+import { getDiagramsActions } from "@/general/actions/get-diagrams-actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { CustomToast } from "@/general/components/CustomToast";
 
@@ -28,6 +30,12 @@ export const ProcessPage = () => {
   const { data } = useArtefacts('Proceso');
   const process = data?.artefacts || [];
   const [selectedProceso, setSelectedProceso] = useState<Artefact | undefined>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importingId, setImportingId] = useState<string | null>(null);
+
+  const handleView = (proceso: Artefact) => {
+    navigate(`/process-viewer/${proceso.id}`);
+  };
 
   const handleEdit = (proceso: Artefact) => {
     setSelectedProceso(proceso);
@@ -57,6 +65,42 @@ export const ProcessPage = () => {
     }
   };
 
+  const handleImportClick = (procesoId: string) => {
+    setImportingId(procesoId);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !importingId) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+      try {
+        // Get existing diagram ID
+        const diagrams: any = await getDiagramsActions(importingId);
+        const diagramId = Array.isArray(diagrams) && diagrams.length > 0 ? diagrams[0].id : (diagrams?.id);
+
+        if (diagramId) {
+          await patchDiagramActions(diagramId, content);
+          CustomToast({ title: "Modelo Importado", description: "El modelo BPMN ha sido actualizado correctamente." });
+        } else {
+          CustomToast({ title: "Error", description: "No se encontró un diagrama asociado para actualizar." });
+        }
+      } catch (error) {
+        console.error("Error importing model:", error);
+        CustomToast({ title: "Error", description: "Ocurrió un error al importar el modelo." });
+      } finally {
+        setImportingId(null);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="min-h-screen">
       <CustomPageHeader
@@ -68,6 +112,13 @@ export const ProcessPage = () => {
             Nuevo Proceso
           </Button>
         }
+      />
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".bpmn,.xml"
+        onChange={handleFileChange}
       />
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 gap-4">
@@ -101,6 +152,22 @@ export const ProcessPage = () => {
                         onClick={() => handleEdit(proceso)}
                         className="h-2 w-8">
                         <Pencil className="h-2 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Importar Modelo"
+                        onClick={() => handleImportClick(proceso.id)}
+                        className="h-2 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+                        <Upload className="h-2 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title="Visualizar"
+                        onClick={() => handleView(proceso)}
+                        className="h-2 w-8 text-purple-500 hover:text-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/30">
+                        <Eye className="h-2 w-4" />
                       </Button>
                       <Button
                         variant="ghost"

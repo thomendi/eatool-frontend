@@ -13,6 +13,7 @@ import { ProcessPage } from './general/pages/process/ProcessPage'
 import { ProcessEditPage } from './general/pages/process/ProcessEditPage'
 import { DataPage } from './general/pages/data/dataPage'
 import ModelProcessPage from './general/pages/process/ModelProcessPage'
+import { ProcessViewerPage } from './general/pages/process/ProcessViewerPage'
 import { Applications } from './general/pages/apps/Applications'
 import { Roles } from './general/pages/roles/Roles'
 import { Risks } from './general/pages/risks/Risks'
@@ -48,6 +49,10 @@ export const appRouter = createBrowserRouter([
         {
             path: 'process',
             element: <ProcessPage />
+        },
+        {
+                path: 'process-viewer/:id',
+                element: <ProcessViewerPage />
         },
         {
             path: 'data',
