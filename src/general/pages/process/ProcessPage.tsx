@@ -45,6 +45,12 @@ export const ProcessPage = () => {
   const { data } = useArtefacts('Proceso');
   const process = data?.artefacts || [];
   const [selectedProceso, setSelectedProceso] = useState<Artefact | undefined>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importingId, setImportingId] = useState<string | null>(null);
+
+  const handleView = (proceso: Artefact) => {
+    navigate(`/process-viewer/${proceso.id}`);
+  };
 
   const handleEdit = (proceso: Artefact) => {
     setSelectedProceso(proceso);
@@ -121,6 +127,42 @@ export const ProcessPage = () => {
         CustomToast({ title: "Error", description: "No se pudo eliminar el proceso" });
       }
     }
+  };
+
+  const handleImportClick = (procesoId: string) => {
+    setImportingId(procesoId);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !importingId) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+      try {
+        // Get existing diagram ID
+        const diagrams: any = await getDiagramsActions(importingId);
+        const diagramId = Array.isArray(diagrams) && diagrams.length > 0 ? diagrams[0].id : (diagrams?.id);
+
+        if (diagramId) {
+          await patchDiagramActions(diagramId, content);
+          CustomToast({ title: "Modelo Importado", description: "El modelo BPMN ha sido actualizado correctamente." });
+        } else {
+          CustomToast({ title: "Error", description: "No se encontró un diagrama asociado para actualizar." });
+        }
+      } catch (error) {
+        console.error("Error importing model:", error);
+        CustomToast({ title: "Error", description: "Ocurrió un error al importar el modelo." });
+      } finally {
+        setImportingId(null);
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
