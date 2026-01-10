@@ -1,13 +1,13 @@
 import { Link, useLocation } from "react-router";
-import { 
-  LayoutDashboard, 
-  GitBranch, 
-  Layers, 
-  Users, 
-  AppWindow, 
-  Target, 
-  AlertTriangle, 
-  Server, 
+import {
+  LayoutDashboard,
+  GitBranch,
+  Layers,
+  Users,
+  AppWindow,
+  Target,
+  AlertTriangle,
+  Server,
   CombineIcon,
   ChartBar
 } from "lucide-react";
@@ -30,16 +30,16 @@ const menuItems = [
 
 
 export const Sidebar = () => {
-const location = useLocation();
+  const location = useLocation();
 
   return (
     <aside className="w-64 bg-card border-r border-border shadow-lg">
       <div className="p-6 border-b border-border">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-900 to-blue-500 bg-clip-text text-transparent">
-         SCI EA Manager
+          EATool APP
         </h1>
         <p className="text-xs text-muted-foreground mt-1">Arquitectura Empresarial</p>
-      </div>        
+      </div>
       <nav className="p-4 space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
