@@ -10,10 +10,10 @@ const eatoolApi = axios.create({
 
 // TODO interceptores
 eatoolApi.interceptors.request.use((config) => {
-    const token = import.meta.env.VITE_TOKEN;
+    const token = localStorage.getItem('token');
 
     if (token) {
-        config.headers.Authorization = `Token ${token}` ;
+        config.headers.Authorization = `Token ${token}`;
     }
 
     return config;
