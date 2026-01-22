@@ -7,6 +7,7 @@ import BpmnViewer from '../../components/BpmnViewer';
 import { getDiagramByIdart } from '../../../api/diagramService';
 import { getArtefactByIdActions } from '@/general/actions/get-artefact-by-id.actions';
 import { getArtefactsSubtypeListActions } from '@/general/actions/get-artefacts-subtype-list.actions';
+import { getArtefactByNameActions } from '@/general/actions/get-artefact-by-name.actions';
 import type { Artefact } from '@/interfaces/artefacts.response';
 import { ArrowLeft } from "lucide-react";
 
@@ -51,14 +52,33 @@ export const ProcessViewerPage = () => {
         }
     };
 
-    const handleElementClick = (element: any) => {
+    const handleElementClick = async (element: any) => {
         const businessObject = element.businessObject;
+        const name = businessObject.name;
+
+        // Initial state from BPMN
         setSelectedElement({
             id: businessObject.id,
-            name: businessObject.name || "Sin Nombre",
+            name: name || "Sin Nombre",
             description: businessObject.documentation?.[0]?.text || "Sin Descripción",
             type: element.type
         });
+
+        // Fetch details from API if name exists
+        if (name) {
+            try {
+                const artefact = await getArtefactByNameActions(name);
+                if (artefact) {
+                    setSelectedElement((prev: any) => ({
+                        ...prev,
+                        id: artefact.id,
+                        description: artefact.description
+                    }));
+                }
+            } catch (error) {
+                console.error("Error fetching artefact details:", error);
+            }
+        }
     };
 
     const handleOpenSubProcess = async () => {

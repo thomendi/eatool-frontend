@@ -20,6 +20,7 @@ import type { Artefact } from '../../../interfaces/artefacts.response';
 import { getArtefactsSubtypeListActions } from "@/general/actions/get-artefacts-subtype-list.actions";
 import { useRef } from 'react';
 import { getArtefactByIdActions } from "@/general/actions/get-artefact-by-id.actions";
+import { useAuth } from '@/auth/hooks/useAuth';
 
 export default function ModelProcessPage() {
   const { id = "PROC-0001" } = useParams();
@@ -37,6 +38,7 @@ export default function ModelProcessPage() {
   const [formDefaultName, setFormDefaultName] = useState<string | undefined>(undefined);
   const [processArtefact, setProcessArtefact] = useState<Artefact | null>(null);
   const modelerInstanceRef = useRef<any>(null);
+  const { company } = useAuth();
 
   useEffect(() => {
     loadList()
@@ -125,7 +127,7 @@ export default function ModelProcessPage() {
           category: "process",
           subcategory: subcategoryAux,
           version: "1.0",
-          company: "MyCompany", // Default
+          company: company || "",
           owner: data.owner,
           state: "active",
           objetive: data.description,
