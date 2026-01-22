@@ -34,6 +34,7 @@ import type { Artefact } from "@/interfaces/artefacts.response";
 import type { ArtefactRequest } from '@/interfaces/artefact.request';
 import { postArtefactActions } from "@/general/actions/post-artefact.actions";
 import { putArtefactActions } from "@/general/actions/put-artefact.actions";
+import { useAuth } from "@/auth/hooks/useAuth";
 
 const processSchema = z.object({
   identificacion: z.string().min(1, "La identificación es requerida"),
@@ -61,6 +62,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
   // const { ctoast } = CustomToast();
   console.log("ESTE ES EL VALOR DE id:", proceso?.id);
   const navigate = useNavigate();
+  const { company } = useAuth();
   const form = useForm<ProcesoFormValues>({
     resolver: zodResolver(processSchema),
     defaultValues: {
@@ -121,7 +123,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
       category: data.categoria,
       subcategory: "General",
       version: "1.0",
-      company: "Mi empresa",
+      company: company || "",
       owner: data.propietario,
       state: data.estado,
       objetive: "Optimizar",
@@ -149,7 +151,8 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
       category: data.categoria,
       subcategory: "General",
       version: "1.0",
-      company: "Mi empresa",
+      company: company || "",
+
       owner: data.propietario,
       state: data.estado,
       objetive: data.objetivos || "Optimizar",
@@ -172,7 +175,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
       await handleCreate(data);
     }
     onOpenChange(false);
-    navigate(`/modelsView/${data.identificacion}`);
+    navigate(`/models/${data.identificacion}`);
   };
 
   const onSubmit = (data: ProcesoFormValues) => {

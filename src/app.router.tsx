@@ -45,6 +45,10 @@ export const appRouter = createBrowserRouter([
                         element: <ModelProcessPage />,
                     },
                     {
+                        path: 'models/:id',
+                        element: <ModelProcessPage />,
+                    },
+                    {
                         path: 'process',
                         element: <ProcessPage />
                     },

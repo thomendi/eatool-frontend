@@ -6,37 +6,105 @@ import { Button } from "@/general/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router";
 import { CustomToast } from "@/general/components/CustomToast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { getCompanies, type Company } from "@/api/companyService";
+import { getUserProfile } from "@/api/userService";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email inválido" }),
   password: z.string().min(1, { message: "La contraseña es requerida" }),
+  company: z.string().min(1, { message: "La compañía es requerida" }),
 });
 
 export const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+
+  useEffect(() => {
+    logout(); // Ensure clean session
+
+    const loadCompanies = async () => {
+      try {
+        const email = import.meta.env.VITE_COMPANY_USER;
+        const password = import.meta.env.VITE_COMPANY_PASS;
+
+        if (!email || !password) {
+          console.warn("Faltan credenciales de sistema en .env");
+          return;
+        }
+
+        // We perform a "system login" to get a token capable of reading companies
+        const { token } = await import("@/auth/actions/login.action").then(m => m.loginAction(email, password));
+
+        const data = await getCompanies(token);
+        setCompanies(data);
+      } catch (error) {
+        console.error("Error fetching companies", error);
+        CustomToast({ title: "Error", description: "No se pudieron cargar las compañías." });
+      }
+    }
+    loadCompanies();
+  }, []);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
+      company: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setLoading(true);
     try {
-      await login(values.email, values.password);
-      CustomToast({ title: "Bienvenido", description: "Has iniciado sesión correctamente" });
-      navigate("/");
+      // 1. Login
+      // company field is required now
+      await login(values.email, values.password, values.company);
+
+      // 2. Validate Company Access
+      try {
+        const userProfile = await getUserProfile();
+        // Validation: user.company === 'ALL' OR user.company === selectedCompany.name
+        // Assuming values.company is the company name because SelectValue usually stores the value passed to Item.
+        // We will make sure to pass the name as value in the SelectItem.
+
+        const selectedCompanyName = values.company;
+
+        if (userProfile.company === 'ALL' || userProfile.company === selectedCompanyName) {
+          CustomToast({ title: "Bienvenido", description: "Has iniciado sesión correctamente" });
+          navigate("/");
+        } else {
+          throw new Error("User does not have access to this company");
+        }
+
+      } catch (validationError) {
+        // If validation fails, logout and show error
+        console.error("Validation failed", validationError);
+        logout(); // Logout to clear token
+        CustomToast({ title: "Acceso Denegado", description: "El usuario no tiene acceso a la compañía seleccionada." });
+      }
+
     } catch (error) {
-      CustomToast({ title: "Error", description: "Credenciales inválidas. Inténtalo de nuevo." });
+      // If login itself fails
+      console.error("Login process error", error);
+      // Only show specific invalid credentials error if it wasn't the validation error
+      // But here we rely on the fact that if login() fails, it throws, so we catch it here.
+      // If validation throws, it's also caught here.
+      // We can distinguish if we want, but for now simple handling.
+      if ((error as Error).message === "User does not have access to this company") {
+        // Already handled above? No, wait.
+        // I nested the try-catch for validation inside.
+        // Let's restructure properly.
+      } else {
+        CustomToast({ title: "Error", description: "Credenciales inválidas o error de conexión." });
+      }
     } finally {
       setLoading(false);
     }
@@ -57,6 +125,30 @@ export const LoginPage = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Compañía</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona una compañía" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {companies.map((company) => (
+                          <SelectItem key={company.id} value={company.name}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="email"

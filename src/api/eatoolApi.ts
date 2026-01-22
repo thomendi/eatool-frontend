@@ -11,9 +11,14 @@ const eatoolApi = axios.create({
 // TODO interceptores
 eatoolApi.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
+    const company = localStorage.getItem('company');
 
     if (token) {
         config.headers.Authorization = `Token ${token}`;
+    }
+
+    if (config.method === 'get' && company && company !== 'ALL') {
+        config.params = { ...config.params, company };
     }
 
     return config;

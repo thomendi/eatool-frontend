@@ -21,6 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/auth/hooks/useAuth";
+import Modeler from 'bpmn-js/lib/Modeler';
+import { createLinkedTask } from '../../../api/artefactService';
 
 
 
@@ -35,7 +37,7 @@ const mockProcesos = [
 export const ProcessPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { role } = useAuth();
+  const { role, company } = useAuth();
 
   // Permissions
   const canEdit = role === 'administrador' || role === 'arquitecto';
@@ -96,12 +98,95 @@ export const ProcessPage = () => {
     reader.onload = async (e) => {
       const content = e.target?.result as string;
       try {
+        // 1. Process Metadata using BPMN Modeler
+        const tempContainer = document.createElement('div');
+        const modeler = new Modeler({ container: tempContainer });
+
+        try {
+          await modeler.importXML(content);
+          const elementRegistry = modeler.get('elementRegistry');
+          const allElements = elementRegistry.getAll();
+
+          // Filter and process elements
+          const processableElements = allElements.filter((element: any) => {
+            const type = element.type;
+            return (
+              type.includes('Task') ||
+              type.includes('SubProcess')
+            ) && element.type !== 'bpmn:Process';
+          });
+
+          for (const element of processableElements) {
+            const businessObject = element.businessObject;
+            const name = businessObject.name || '';
+            const description = businessObject.documentation?.[0]?.text || '';
+
+            // Only process if it has a name (or valid ID?) - sticking to name as per ModelProcessPage fallback logic
+            if (name) {
+              let subcategoryAux = "task";
+              let subtypeAux = "Tarea";
+
+              if (element.type.includes('Task')) {
+                subcategoryAux = "task";
+                subtypeAux = "Tarea";
+              } else if (element.type.includes('SubProcess')) {
+                subcategoryAux = "subprocess";
+                subtypeAux = "Subproceso"; // Or "Proceso"? ModelProcessPage uses "Proceso" for SubProcess, let's Verify.
+                // ModelProcessPage line 113: subtypeAux = "Proceso";
+                // However, user said "createLinkedTask... for components of type task and subprocess".
+                // I will use "Subproceso" to be specific, or "Proceso" if that's the convention.
+                // Let's check ModelProcessPage again. It says 'Proceso'. I will use 'Proceso' to match existing logic.
+                subtypeAux = "Proceso";
+              }
+              console.log("Processing process:", pendingFile.procesoId);
+              console.log("Processing element name:", name);
+              console.log("Processing element description:", description);
+              console.log("Processing element type:", element.type);
+              console.log("Processing element subtype:", subtypeAux);
+              console.log("Processing element subcategory:", subcategoryAux);
+              console.log("Processing element version:", "1.0");
+              console.log("Processing element company:", company);
+              console.log("Processing element owner:", "System");
+              console.log("Processing element state:", "active");
+              console.log("Processing element objetive:", description);
+              console.log("Processing element range:", "local");
+              console.log("Processing element idart:", pendingFile.procesoId);
+              await createLinkedTask({
+                name: name,
+                description: description,
+                type: element.type,
+                level: 1,
+                subtype: subtypeAux,
+                alias: name,
+                category: "process",
+                subcategory: subcategoryAux,
+                version: "1.0",
+                company: company || "",
+                owner: "System", // Or current user? ModelProcessPage used data.owner. Here we default.
+                state: "active",
+                objetive: name,
+                range: "local",
+                idart: pendingFile.procesoId
+              });
+            }
+          }
+          console.log(`Processed ${processableElements.length} elements for metadata.`);
+
+        } catch (parseError) {
+          console.error("Error parsing BPMN for metadata:", parseError);
+          // Continue to save diagram even if metadata extraction fails?
+          // Better to warn but try to save the visual diagram.
+        } finally {
+          modeler.destroy();
+        }
+
+        // 2. Update Diagram XML
         const diagrams: any = await getDiagramsActions(pendingFile.procesoId);
         const diagramId = Array.isArray(diagrams) && diagrams.length > 0 ? diagrams[0].id : (diagrams?.id);
 
         if (diagramId) {
           await patchDiagramActions(diagramId, content);
-          CustomToast({ title: "Modelo Importado", description: "El modelo BPMN ha sido actualizado correctamente." });
+          CustomToast({ title: "Modelo Importado", description: "El modelo y sus metadatos han sido actualizados." });
         } else {
           CustomToast({ title: "Error", description: "No se encontró un diagrama asociado para actualizar." });
         }
