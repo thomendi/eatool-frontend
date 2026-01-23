@@ -27,13 +27,7 @@ import { createLinkedTask } from '../../../api/artefactService';
 
 
 
-const mockProcesos = [
-  { id: 1, nombre: "Gestión de Ventas", categoria: "Comercial", estado: "Activo", propietario: "María García" },
-  { id: 2, nombre: "Reclutamiento", categoria: "RRHH", estado: "Activo", propietario: "Juan Pérez" },
-  { id: 3, nombre: "Compras", categoria: "Operaciones", estado: "En Revisión", propietario: "Ana López" },
-  { id: 4, nombre: "Facturación", categoria: "Finanzas", estado: "Activo", propietario: "Carlos Ruiz" },
-  { id: 5, nombre: "Soporte al Cliente", categoria: "Servicio", estado: "Activo", propietario: "Laura Martín" },
-];
+
 export const ProcessPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -48,11 +42,9 @@ export const ProcessPage = () => {
   const process = data?.artefacts || [];
   const [selectedProceso, setSelectedProceso] = useState<Artefact | undefined>();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importingId, setImportingId] = useState<string | null>(null);
 
-  const handleView = (proceso: Artefact) => {
-    navigate(`/process-viewer/${proceso.id}`);
-  };
+
+
 
   const handleEdit = (proceso: Artefact) => {
     setSelectedProceso(proceso);
@@ -71,7 +63,7 @@ export const ProcessPage = () => {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<{ file: File; procesoId: string } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const handleImportClick = (procesoId: string) => {
     if (fileInputRef.current) {
@@ -104,7 +96,7 @@ export const ProcessPage = () => {
 
         try {
           await modeler.importXML(content);
-          const elementRegistry = modeler.get('elementRegistry');
+          const elementRegistry = modeler.get('elementRegistry') as any;
           const allElements = elementRegistry.getAll();
 
           // Filter and process elements
@@ -214,41 +206,7 @@ export const ProcessPage = () => {
     }
   };
 
-  const handleImportClick = (procesoId: string) => {
-    setImportingId(procesoId);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-      fileInputRef.current.click();
-    }
-  };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !importingId) return;
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const content = e.target?.result as string;
-      try {
-        // Get existing diagram ID
-        const diagrams: any = await getDiagramsActions(importingId);
-        const diagramId = Array.isArray(diagrams) && diagrams.length > 0 ? diagrams[0].id : (diagrams?.id);
-
-        if (diagramId) {
-          await patchDiagramActions(diagramId, content);
-          CustomToast({ title: "Modelo Importado", description: "El modelo BPMN ha sido actualizado correctamente." });
-        } else {
-          CustomToast({ title: "Error", description: "No se encontró un diagrama asociado para actualizar." });
-        }
-      } catch (error) {
-        console.error("Error importing model:", error);
-        CustomToast({ title: "Error", description: "Ocurrió un error al importar el modelo." });
-      } finally {
-        setImportingId(null);
-      }
-    };
-    reader.readAsText(file);
-  };
 
   return (
     <div className="min-h-screen">
