@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
+import { useParams } from "react-router";
 import {
     ReactFlow,
     ReactFlowProvider,
@@ -18,8 +19,16 @@ import '@xyflow/react/dist/style.css';
 import { Sidebar } from './components/Sidebar';
 import { EditorToolbar } from './components/EditorToolbar';
 import { PropertiesPanel } from './components/PropertiesPanel';
+import { ValueChainDetailsPanel } from './components/ValueChainDetailsPanel';
 import { nodeTypes } from './components/CustomNodes';
-import { exportToXML, downloadXML } from './utils/xmlUtils';
+import { exportToXML, importFromXML } from './utils/xmlUtils';
+
+// Services
+import { insertDiagram, updateDiagram, getDiagramByIdart } from '@/api/diagramService';
+import { createLinkedTask } from '@/api/artefactService';
+import type { DiagramModel } from '@/interfaces/diagram';
+import { useAuth } from '@/auth/hooks/useAuth';
+import { CustomToast } from '@/general/components/CustomToast';
 
 interface ValueChainPageProps {
     readOnly?: boolean;
@@ -32,6 +41,7 @@ const initialEdges: Edge[] = [];
 const getId = () => `node_${crypto.randomUUID()}`;
 
 const ValueChainFlow = ({ readOnly = false }: ValueChainPageProps) => {
+    const { id } = useParams();
     const reactFlowWrapper = useRef<HTMLDivElement>(null);
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -39,6 +49,34 @@ const ValueChainFlow = ({ readOnly = false }: ValueChainPageProps) => {
 
     const [selectedNode, setSelectedNode] = useState<Node | null>(null);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [diagramModel, setDiagramModel] = useState<DiagramModel | null>(null);
+    const { company } = useAuth();
+
+    // Load existing diagram
+    useEffect(() => {
+        if (!id) return;
+
+        const loadDiagram = async () => {
+            try {
+                const items = await getDiagramByIdart(id);
+                if (items.length > 0) {
+                    const loadedModel = items[0];
+                    setDiagramModel(loadedModel);
+                    if (loadedModel.diagram) {
+                        const { nodes: loadedNodes, edges: loadedEdges } = importFromXML(loadedModel.diagram);
+                        setNodes(loadedNodes);
+                        setEdges(loadedEdges);
+                        setTimeout(() => fitView(), 100);
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading diagram:", error);
+            }
+        };
+
+        loadDiagram();
+    }, [id, setNodes, setEdges, fitView]);
+
 
     // Update selectedNode when nodes change selection
     useEffect(() => {
@@ -149,67 +187,143 @@ const ValueChainFlow = ({ readOnly = false }: ValueChainPageProps) => {
         [screenToFlowPosition, nodes, setNodes],
     );
 
-    const onSave = useCallback(() => {
+    const onSave = useCallback(async () => {
+        if (!id) {
+            alert("No se ha definido un ID para este modelo.");
+            return;
+        }
+
         const xml = exportToXML(nodes, edges);
         console.log('Exported XML:', xml);
-        downloadXML(xml);
-    }, [nodes, edges]);
+        // downloadXML(xml); // Optional: keep download if needed, but primary is save to DB.
+
+        // 1. Create Linked Tasks for each 'process' node
+        const processNodes = nodes.filter(n => n.type === 'process');
+
+        for (const node of processNodes) {
+            try {
+                const data = node.data as any;
+                await createLinkedTask({
+                    name: data.label || 'Unnamed Process',
+                    description: data.description || '',
+                    type: node.type || "process", // 'process'
+                    level: 1,
+                    subtype: "Proceso", // Fixed subtype
+                    alias: data.label || 'Unnamed',
+                    category: "process",
+                    subcategory: "subprocess", // Using subprocess as per requirement/analogy
+                    version: "1.0",
+                    company: company || "",
+                    owner: "User", // Placeholder or from context
+                    state: "active",
+                    objetive: data.objective || '',
+                    range: data.mission || 'local', // Mapping mission to range as requested
+                    idart: id || ""
+                });
+            } catch (error) {
+                console.error(`Failed to save linked task for node ${node.id}:`, error);
+            }
+        }
+
+        // 2. Save Diagram Model
+        const payload: DiagramModel = {
+            idart: id,
+            name: diagramModel?.name || `Value Chain ${id}`,
+            description: 'Guardado desde Value Chain Editor',
+            version: '1.0',
+            diagram: xml
+        };
+
+        try {
+            if (diagramModel && diagramModel.id) {
+                await updateDiagram(diagramModel.id, payload);
+                CustomToast({ title: "Guardado", description: "Modelo actualizado correctamente" });
+            } else {
+                const newModel = await insertDiagram(payload);
+                setDiagramModel(newModel); // Store the new model so subsequent saves are updates
+                CustomToast({ title: "Guardado", description: "Modelo creado correctamente" });
+            }
+        } catch (error) {
+            console.error("Error saving diagram:", error);
+            alert("Error al guardar el modelo.");
+        }
+
+    }, [nodes, edges, id, diagramModel, company]);
 
     const onClear = useCallback(() => {
-        setNodes([]);
-        setEdges([]);
+        if (confirm("¿Estás seguro de limpiar el lienzo?")) {
+            setNodes([]);
+            setEdges([]);
+        }
     }, [setNodes, setEdges]);
 
     return (
         <div className="flex h-full w-full bg-background relative overflow-hidden">
             {!readOnly && <Sidebar />}
 
-            <div className="flex-1 h-full relative" ref={reactFlowWrapper}>
-                <ReactFlow
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    onConnectEnd={(event) => console.log(event)}
-                    onDrop={onDrop}
-                    onDragOver={onDragOver}
-                    onNodeClick={onNodeClick}
-                    onNodeDoubleClick={onNodeDoubleClick}
-                    onPaneClick={onPaneClick}
-                    nodeTypes={nodeTypes}
-                    fitView
-                    className="bg-muted/10"
-                    nodesDraggable={!readOnly}
-                    nodesConnectable={!readOnly}
-                    elementsSelectable={!readOnly}
-                >
-                    <Background color="#ccc" gap={20} />
-                    {!readOnly && (
-                        <EditorToolbar
-                            onZoomIn={() => zoomIn()}
-                            onZoomOut={() => zoomOut()}
-                            onFitView={() => fitView()}
-                            onClear={onClear}
-                            onSave={onSave}
-                        />
-                    )}
-                </ReactFlow>
+            <div className="flex-1 h-full relative flex flex-row" ref={reactFlowWrapper}>
+                <div className="flex-1 h-full relative">
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        onConnect={onConnect}
+                        onConnectEnd={(event) => console.log(event)}
+                        onDrop={onDrop}
+                        onDragOver={onDragOver}
+                        onNodeClick={onNodeClick}
+                        onNodeDoubleClick={onNodeDoubleClick}
+                        onPaneClick={onPaneClick}
+                        nodeTypes={nodeTypes}
+                        fitView
+                        className="bg-muted/10 h-full"
+                        nodesDraggable={!readOnly}
+                        nodesConnectable={!readOnly}
+                        elementsSelectable={true} // Allow selection in readOnly
+                    >
+                        <Background color="#ccc" gap={20} />
+                        {!readOnly && (
+                            <EditorToolbar
+                                onZoomIn={() => zoomIn()}
+                                onZoomOut={() => zoomOut()}
+                                onFitView={() => fitView()}
+                                onClear={onClear}
+                                onSave={onSave}
+                            />
+                        )}
+                        {readOnly && (
+                            <div className="absolute top-4 right-4 z-10 flex gap-2">
+                                <button
+                                    onClick={() => fitView()}
+                                    className="bg-white p-2 rounded-md shadow-md hover:bg-gray-50 border border-gray-200"
+                                    title="Ajustar vista"
+                                >
+                                    {/* Just a simple button if needed, or rely on mouse wheel. EditorToolbar has these. */}
+                                    {/* Reusing icons might be better but for now let's stick to base functionality or just leave it blank as requested "Like ProcessViewerPage" */}
+                                </button>
+                            </div>
+                        )}
+                    </ReactFlow>
 
-                {/* Properties Panel Overlay */}
-                {!readOnly && (
-                    <div className={`absolute top-0 right-0 h-full w-80 z-20 transition-transform duration-300 ${isPanelOpen && selectedNode ? 'translate-x-0' : 'translate-x-full'}`}>
-                        <PropertiesPanel
-                            selectedNode={selectedNode}
-                            onUpdateNode={onUpdateNode}
-                            onClose={() => {
-                                setIsPanelOpen(false);
-                                // Optional: Keep selection or clear it?
-                                // User usually expects 'close panel' to just hide UI,
-                                // but we can also deselect if desired.
-                                // Let's keep it simple: just close panel.
-                            }}
-                        />
+                    {/* Properties Panel Overlay (Edit Mode) */}
+                    {!readOnly && (
+                        <div className={`absolute top-0 right-0 h-full w-80 z-20 transition-transform duration-300 ${isPanelOpen && selectedNode ? 'translate-x-0' : 'translate-x-full'}`}>
+                            <PropertiesPanel
+                                selectedNode={selectedNode}
+                                onUpdateNode={onUpdateNode}
+                                onClose={() => {
+                                    setIsPanelOpen(false);
+                                }}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Details Panel (View Mode) */}
+                {readOnly && (
+                    <div className="w-80 h-full border-l border-border bg-background z-10">
+                        <ValueChainDetailsPanel selectedNode={selectedNode} />
                     </div>
                 )}
             </div>

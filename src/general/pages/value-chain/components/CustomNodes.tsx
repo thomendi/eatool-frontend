@@ -27,7 +27,8 @@ const MacroprocessNode = ({ data, selected }: NodeProps) => {
             }}
         >
             {/* Label Area - Floating on the left inside the shape */}
-            <div className="absolute left-16 top-1/2 -translate-y-1/2 w-48 font-bold text-slate-800 text-xl leading-tight">
+            {/* Label Area - Floating on the left - Adjusted size and position */}
+            <div className="absolute left-8 top-4 w-60 font-bold text-slate-800 text-sm leading-tight text-left">
                 {data.label as string}
             </div>
 

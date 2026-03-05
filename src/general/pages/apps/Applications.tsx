@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { ApplicationCard } from "@/general/components/applications/ApplicationCard";
 import { ApplicationDetailModal } from "@/general/components/applications/ApplicationDetailModal";
 import { AddApplicationModal } from "@/general/components/applications/AddApplicationModal";
@@ -15,6 +16,7 @@ export const Applications = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<Application | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   // --------------------------
   // Load Applications from API
@@ -57,6 +59,11 @@ export const Applications = () => {
   const handleCardClick = (app: Application) => {
     setEditingApp(app);
     setIsAddOpen(true);
+  };
+
+  const handleView = (app: Application) => {
+    const redirectId = app.idart || app.id;
+    navigate(`/apps-viewer/${redirectId}`);
   };
 
   const totalUsers = applications.reduce((sum, app) => sum + app.activeUsers, 0);
@@ -134,6 +141,7 @@ export const Applications = () => {
               key={app.id}
               application={app}
               onClick={() => handleCardClick(app)}
+              onView={() => handleView(app)}
             />
           ))}
         </div>

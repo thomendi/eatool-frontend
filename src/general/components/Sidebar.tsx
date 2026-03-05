@@ -24,7 +24,7 @@ const menuItems = [
   { icon: Target, label: "Objetivos", path: "/objetivos" },
   { icon: AlertTriangle, label: "Riesgos", path: "/risks" },
   { icon: Server, label: "Infraestructura", path: "/infraestructura" },
-  { icon: CombineIcon, label: "Modelos", path: "/models" },
+  { icon: CombineIcon, label: "Modelos", path: "/architecture-model" },
   { icon: ChartBar, label: "Datos", path: "/data" },
 ];
 

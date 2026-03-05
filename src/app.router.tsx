@@ -16,9 +16,12 @@ import { ProcessViewerPage } from './general/pages/process/ProcessViewerPage'
 import ModelProcessPage from './general/pages/process/ModelProcessPage'
 
 import { Applications } from './general/pages/apps/Applications'
+import { ApplicationViewerPage } from './general/pages/apps/ApplicationViewerPage'
 import { Roles } from './general/pages/roles/Roles'
 import { Risks } from './general/pages/risks/Risks'
 import { ValueChainPage } from './general/pages/value-chain/ValueChainPage'
+import { ValueChainViewerPage } from './general/pages/value-chain/ValueChainViewerPage'
+import ModelArchitecturePage from './general/pages/architecture/ModelArchitecturePage'
 
 const AuthLayout = lazy(() => import('./auth/layouts/AuthLayout'));
 const AdminLayouts = lazy(() => import('./admin/layouts/AdminLayout'));
@@ -66,6 +69,10 @@ export const appRouter = createBrowserRouter([
                         element: <Applications />
                     },
                     {
+                        path: 'apps-viewer/:id',
+                        element: <ApplicationViewerPage />
+                    },
+                    {
                         path: 'roles',
                         element: <Roles />
                     },
@@ -74,8 +81,20 @@ export const appRouter = createBrowserRouter([
                         element: <Risks />
                     },
                     {
-                        path: 'value-chain',
+                        path: 'value-chain/:id',
                         element: <ValueChainPage />
+                    },
+                    {
+                        path: 'value-chain-viewer/:id',
+                        element: <ValueChainViewerPage />
+                    },
+                    {
+                        path: 'architecture-model',
+                        element: <ModelArchitecturePage />
+                    },
+                    {
+                        path: 'architecture-model/:id',
+                        element: <ModelArchitecturePage />
                     },
                 ],
             },

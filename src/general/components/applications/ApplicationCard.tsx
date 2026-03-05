@@ -1,13 +1,14 @@
-import { AppWindow, Users, TrendingUp } from "lucide-react";
+import { AppWindow, Users, TrendingUp, Eye } from "lucide-react";
 import type { Application } from "@/api/applicationService";  // <-- CAMBIADO
 import { cn } from "@/lib/utils";
 
 interface ApplicationCardProps {
   application: Application;
   onClick: () => void;
+  onView: () => void;
 }
 
-export function ApplicationCard({ application, onClick }: ApplicationCardProps) {
+export function ApplicationCard({ application, onClick, onView }: ApplicationCardProps) {
   const statusColors = {
     active: "bg-success/10 text-success",
     maintenance: "bg-warning/10 text-warning",
@@ -23,17 +24,30 @@ export function ApplicationCard({ application, onClick }: ApplicationCardProps) 
   return (
     <div
       onClick={onClick}
-      className="app-card p-6 group border border-border/50 rounded-xl 
+      className="app-card p-6 group border border-border/50 rounded-xl
              transition-all duration-300
-             hover:shadow-lg hover:border-primary/30 cursor-pointer"
+             hover:shadow-lg hover:border-primary/30 cursor-pointer relative"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
           <AppWindow className="w-6 h-6 text-primary" />
         </div>
-        <span className={cn("stat-badge", statusColors[application.status])}>
-          {statusLabels[application.status]}
-        </span>
+
+        <div className="flex items-center gap-2">
+          <span className={cn("stat-badge", statusColors[application.status])}>
+            {statusLabels[application.status]}
+          </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+            title="Ver detalles y modelo"
+          >
+            <Eye size={18} />
+          </button>
+        </div>
       </div>
 
       <h3 className="text-lg font-semibold text-card-foreground mb-1 group-hover:text-primary transition-colors">
