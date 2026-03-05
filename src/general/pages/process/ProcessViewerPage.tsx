@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/general/components/ui/button";
 import { CustomPageHeader } from "@/general/components/CustomPageHeader";
@@ -14,6 +14,8 @@ import { ArrowLeft } from "lucide-react";
 export const ProcessViewerPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from || 'list'; // 'list' or 'model'
     const [currentId, setCurrentId] = useState<string | undefined>(id);
     const [diagramXml, setDiagramXml] = useState<string>("");
     const [processArtefact, setProcessArtefact] = useState<Artefact | null>(null);
@@ -111,6 +113,8 @@ export const ProcessViewerPage = () => {
             const previous = history[history.length - 1];
             setHistory(prev => prev.slice(0, -1));
             setCurrentId(previous.id);
+        } else if (from === 'model') {
+            navigate(-1);
         } else {
             navigate('/process');
         }
@@ -124,7 +128,7 @@ export const ProcessViewerPage = () => {
                 action={
                     <Button variant="outline" onClick={handleGoBack} className="gap-2">
                         <ArrowLeft className="h-4 w-4" />
-                        {history.length > 0 ? "Volver al nivel superior" : "Volver a la lista"}
+                        {history.length > 0 ? "Volver al nivel superior" : (from === 'model' ? "Volver al modelo" : "Volver a la lista")}
                     </Button>
                 }
             />

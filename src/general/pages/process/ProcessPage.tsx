@@ -52,8 +52,12 @@ export const ProcessPage = () => {
   };
   const handleGraph = (proceso: Artefact) => {
     const idart = proceso.id;
-    const url = "/process-viewer/" + idart;
-    navigate(url);
+    if (proceso.type === 'ValueChain') {
+      navigate('/value-chain-viewer/' + idart, { state: { from: 'list' } });
+    } else {
+      const url = "/process-viewer/" + idart;
+      navigate(url, { state: { from: 'list' } });
+    }
   };
 
   const handleNew = () => {

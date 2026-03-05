@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,9 @@ export function AddApplicationModal({
   onAdd,
   applicationToEdit,
 }: AddApplicationModalProps) {
+  const navigate = useNavigate();
+  const [actionType, setActionType] = useState<"save" | "model">("save");
+
   const [formData, setFormData] = useState({
     name: "",
     version: "",
@@ -128,23 +132,29 @@ export function AddApplicationModal({
       // El backend devuelve el objeto final → lo agregamos a la lista del front
       onAdd(resultApp);
 
-      // Limpiar formulario
-      setFormData({
-        name: "",
-        version: "",
-        developer: "",
-        activeUsers: "",
-        status: "active",
-        description: "",
-        os: "",
-        language: "",
-        framework: "",
-        security: "",
-        type: "",
-        priority: "",
-      });
+      if (actionType === "model") {
+        const redirectId = resultApp.idart || resultApp.id;
+        navigate(`/architecture-model/${redirectId}`);
+        onOpenChange(false);
+      } else {
+        // Limpiar formulario
+        setFormData({
+          name: "",
+          version: "",
+          developer: "",
+          activeUsers: "",
+          status: "active",
+          description: "",
+          os: "",
+          language: "",
+          framework: "",
+          security: "",
+          type: "",
+          priority: "",
+        });
 
-      onOpenChange(false);
+        onOpenChange(false);
+      }
     } catch (error) {
       console.error(error);
       toast.error(applicationToEdit ? "Error al actualizar la aplicación" : "Error al crear la aplicación");
@@ -329,7 +339,19 @@ export function AddApplicationModal({
             >
               Cancelar
             </Button>
-            <Button type="submit">{applicationToEdit ? 'Modificar' : 'Agregar Aplicación'}</Button>
+            <Button
+              type="submit"
+              variant="secondary"
+              onClick={() => setActionType("model")}
+            >
+              Crear modelo
+            </Button>
+            <Button
+              type="submit"
+              onClick={() => setActionType("save")}
+            >
+              {applicationToEdit ? 'Modificar' : 'Agregar Aplicación'}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

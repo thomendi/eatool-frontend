@@ -48,6 +48,7 @@ const processSchema = z.object({
   capacidades: z.string().optional(),
   riesgos: z.string().optional(),
   objetivos: z.string().optional(),
+  type: z.string().min(1, "El tipo de modelo es requerido"),
 });
 
 type ProcesoFormValues = z.infer<typeof processSchema>;
@@ -77,6 +78,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
       capacidades: "",
       riesgos: "",
       objetivos: proceso?.objetive || "",
+      type: proceso?.type || "BPMN",
     },
   });
 
@@ -94,6 +96,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
         capacidades: "",
         riesgos: "",
         objetivos: proceso.objetive || "",
+        type: proceso.type || "BPMN",
       });
     } else if (defaultName) {
       form.reset({
@@ -108,6 +111,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
         capacidades: "",
         riesgos: "",
         objetivos: "",
+        type: "BPMN",
       });
     }
   }, [proceso, defaultName, form]);
@@ -116,7 +120,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
       id: data.identificacion,
       name: data.nombre,
       description: data.descripcion,
-      type: "BPMN",
+      type: data.type,
       level: 2,
       subtype: "Proceso",
       alias: "Alias test",
@@ -144,7 +148,7 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
       id: data.identificacion,
       name: data.nombre,
       description: data.descripcion,
-      type: "BPMN",
+      type: data.type,
       level: 2,
       subtype: "Proceso",
       alias: "Alias test",
@@ -175,7 +179,11 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
       await handleCreate(data);
     }
     onOpenChange(false);
-    navigate(`/models/${data.identificacion}`);
+    if (data.type === "BPMN") {
+      navigate(`/models/${data.identificacion}`);
+    } else if (data.type === "ValueChain") {
+      navigate(`/value-chain/${data.identificacion}`);
+    }
   };
 
   const onSubmit = (data: ProcesoFormValues) => {
@@ -292,6 +300,27 @@ export function ProcessForm({ open, onOpenChange, proceso, defaultName }: Proces
                       <SelectItem value="Finanzas">Finanzas</SelectItem>
                       <SelectItem value="Servicio">Servicio</SelectItem>
                       <SelectItem value="TI">TI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Modelo</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un tipo de modelo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="BPMN">BPMN</SelectItem>
+                      <SelectItem value="ValueChain">ValueChain</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

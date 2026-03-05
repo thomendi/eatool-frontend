@@ -2,6 +2,7 @@ import { eatoolApi } from "@/api/eatoolApi"; // Ajusta la ruta si tu archivo est
 
 export interface Application {
   id?: number;
+  idart?: string;
   name: string;
   version: string;
   developer: string;
